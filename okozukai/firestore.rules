@@ -1,0 +1,148 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isParent() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'parent';
+    }
+
+    function isChild() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'child';
+    }
+
+    function belongsToFamily(familyId) {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isOwner(userId) ||
+                     (isAuthenticated() &&
+                      belongsToFamily(resource.data.familyId));
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if false; // Users cannot be deleted
+    }
+
+    // Families collection
+    match /families/{familyId} {
+      allow read: if belongsToFamily(familyId);
+      allow create: if isAuthenticated();
+      allow update: if belongsToFamily(familyId) && isParent();
+      allow delete: if false;
+    }
+
+    // Task templates (created by parents)
+    match /taskTemplates/{taskId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create: if isParent() && belongsToFamily(request.resource.data.familyId);
+      allow update: if isParent() && belongsToFamily(resource.data.familyId);
+      allow delete: if isParent() && belongsToFamily(resource.data.familyId);
+    }
+
+    // Task submissions (created by children, reviewed by parents)
+    match /taskSubmissions/{submissionId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create: if isChild() &&
+                       belongsToFamily(request.resource.data.familyId) &&
+                       request.auth.uid == request.resource.data.childId;
+      allow update: if belongsToFamily(resource.data.familyId) &&
+                       (isParent() || // Parents can approve/reject
+                        (isChild() && request.auth.uid == resource.data.childId &&
+                         resource.data.status == 'submitted')); // Children can update pending
+      allow delete: if false;
+    }
+
+    // Task proposals (created by children, managed by parents)
+    match /taskProposals/{proposalId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create: if isChild() &&
+                       belongsToFamily(request.resource.data.familyId) &&
+                       request.auth.uid == request.resource.data.childId;
+      allow update: if belongsToFamily(resource.data.familyId) &&
+                       (isParent() || // Parents can approve/reject/comment
+                        (isChild() && request.auth.uid == resource.data.childId &&
+                         resource.data.status == 'pending')); // Children can update pending
+      allow delete: if isParent() && belongsToFamily(resource.data.familyId);
+    }
+
+    // Star balances (per child)
+    match /starBalances/{childId} {
+      allow read: if isOwner(childId) ||
+                     (isAuthenticated() &&
+                      belongsToFamily(resource.data.familyId));
+      allow create, update: if belongsToFamily(resource.data.familyId) &&
+                               (isParent() || isOwner(childId));
+      allow delete: if false;
+    }
+
+    // Star transactions (audit log)
+    match /starTransactions/{transactionId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create: if belongsToFamily(request.resource.data.familyId) &&
+                       (isParent() || request.auth.uid == request.resource.data.childId);
+      allow update, delete: if false; // Transactions are immutable
+    }
+
+    // Player data (avatar, equipped items)
+    match /players/{childId} {
+      allow read: if isOwner(childId) ||
+                     (isAuthenticated() &&
+                      belongsToFamily(resource.data.familyId));
+      allow create: if isOwner(childId);
+      allow update: if isOwner(childId);
+      allow delete: if false;
+    }
+
+    // Owned items (per child)
+    match /ownedItems/{itemId} {
+      allow read: if isOwner(resource.data.childId) ||
+                     (isAuthenticated() &&
+                      belongsToFamily(resource.data.familyId));
+      allow create: if isOwner(request.resource.data.childId);
+      allow update, delete: if false; // Items once owned cannot be removed
+    }
+
+    // Shop items (global, read-only for users)
+    match /shopItems/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Admin only via console/functions
+    }
+
+    // Rewards (created by parents)
+    match /rewards/{rewardId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create: if isParent() && belongsToFamily(request.resource.data.familyId);
+      allow update: if isParent() && belongsToFamily(resource.data.familyId);
+      allow delete: if isParent() && belongsToFamily(resource.data.familyId);
+    }
+
+    // Reward redemptions
+    match /rewardRedemptions/{redemptionId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create: if isChild() &&
+                       belongsToFamily(request.resource.data.familyId) &&
+                       request.auth.uid == request.resource.data.childId;
+      allow update: if isParent() && belongsToFamily(resource.data.familyId);
+      allow delete: if false;
+    }
+
+    // Family settings
+    match /familySettings/{settingsId} {
+      allow read: if belongsToFamily(resource.data.familyId);
+      allow create, update: if isParent() && belongsToFamily(request.resource.data.familyId);
+      allow delete: if false;
+    }
+  }
+}
