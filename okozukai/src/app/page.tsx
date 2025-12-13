@@ -1,12 +1,14 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/contexts/DemoContext';
 import Link from 'next/link';
 import PiggyBank from '@/components/piggybank/PiggyBank';
 import CharacterAvatar from '@/components/characters/CharacterAvatar';
 
 export default function HomePage() {
   const { user, loading, isConfigured } = useAuth();
+  const { player } = useDemo();
 
   if (loading) {
     return (
@@ -20,7 +22,7 @@ export default function HomePage() {
   }
 
   if (!user) {
-    return <LandingPage isConfigured={isConfigured} />;
+    return <LandingPage isConfigured={isConfigured} appearance={player?.appearance} />;
   }
 
   if (user.role === 'child') {
@@ -30,11 +32,11 @@ export default function HomePage() {
   return <ParentDashboard />;
 }
 
-function LandingPage({ isConfigured }: { isConfigured: boolean }) {
+function LandingPage({ isConfigured, appearance }: { isConfigured: boolean; appearance?: import('@/types').AvatarAppearance }) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center">
-        <CharacterAvatar size="xl" expression="happy" />
+        <CharacterAvatar size="xl" expression="happy" appearance={appearance} />
         <h2 className="text-3xl font-bold text-gray-800 mt-6">
           おこづかいアップ大作戦
         </h2>
