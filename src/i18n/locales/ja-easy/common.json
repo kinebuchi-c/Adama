@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "すぎなみ　あたらしい　ひとの　サポート",
+    "subtitle": "がいこくじんの　ための　てつづきの　ガイド"
+  },
+  "nav": {
+    "home": "ホーム",
+    "tasks": "やること",
+    "documents": "しょるい",
+    "offices": "まどぐち",
+    "life": "せいかつ",
+    "phrases": "ことば",
+    "info": "じょうほう",
+    "help": "ヘルプ"
+  },
+  "actions": {
+    "next": "つぎへ",
+    "back": "もどる",
+    "complete": "おわり",
+    "skip": "スキップ",
+    "save": "ほぞん",
+    "cancel": "やめる",
+    "edit": "へんこう",
+    "delete": "けす",
+    "search": "さがす",
+    "close": "とじる",
+    "confirm": "たしかめる",
+    "start": "はじめる",
+    "viewAll": "ぜんぶ　みる",
+    "learnMore": "くわしく　みる"
+  },
+  "status": {
+    "notStarted": "まだ",
+    "inProgress": "やっている",
+    "waiting": "まっている",
+    "completed": "おわった",
+    "skipped": "スキップした"
+  },
+  "priority": {
+    "high": "たいせつ",
+    "medium": "ふつう",
+    "low": "あとで"
+  },
+  "language": {
+    "select": "ことばを　えらぶ",
+    "current": "いまの　ことば"
+  },
+  "welcome": {
+    "greeting": "ようこそ",
+    "message": "すぎなみくの　せいかつを　サポートします"
+  },
+  "errors": {
+    "general": "エラーです",
+    "networkError": "ネットワークエラーです",
+    "notFound": "みつかりませんでした"
+  },
+  "consultation": {
+    "title": "そうだんまどぐち",
+    "description": "ほかの　ことばが　ほしいときは、そうだんまどぐちに　きいてください",
+    "link": "そうだんまどぐちを　みる"
+  }
+}

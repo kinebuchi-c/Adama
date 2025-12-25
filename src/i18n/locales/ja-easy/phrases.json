@@ -1,0 +1,112 @@
+{
+  "title": "べんりな　ことば",
+  "subtitle": "まどぐちで　つかえる　ことば",
+  "categories": {
+    "cityHall": {
+      "name": "くやくしょ",
+      "icon": "building"
+    },
+    "bank": {
+      "name": "ぎんこう",
+      "icon": "bank"
+    },
+    "hospital": {
+      "name": "びょういん",
+      "icon": "hospital"
+    },
+    "postOffice": {
+      "name": "ゆうびんきょく",
+      "icon": "mail"
+    },
+    "dailyLife": {
+      "name": "まいにちの　せいかつ",
+      "icon": "home"
+    }
+  },
+  "phrases": {
+    "cityHall": {
+      "greeting": {
+        "ja": "すみません、がいこくじんの　てつづきを　したいです。",
+        "romaji": "Sumimasen, gaikokujin no tetsuzuki wo shitai desu."
+      },
+      "residenceRegistration": {
+        "ja": "じゅうみん　とうろくを　したいです。",
+        "romaji": "Juumin touroku wo shitai desu."
+      },
+      "addressChange": {
+        "ja": "じゅうしょを　かえた　とどけを　したいです。",
+        "romaji": "Juusho wo kaeta todoke wo shitai desu."
+      },
+      "myNumber": {
+        "ja": "マイナンバーカードが　ほしいです。",
+        "romaji": "Mainanbaa kaado ga hoshii desu."
+      },
+      "healthInsurance": {
+        "ja": "けんこう　ほけんに　はいりたいです。",
+        "romaji": "Kenkou hoken ni hairitai desu."
+      },
+      "interpreter": {
+        "ja": "つうやくは　いますか？",
+        "romaji": "Tsuuyaku wa imasu ka?"
+      }
+    },
+    "bank": {
+      "openAccount": {
+        "ja": "こうざを　つくりたいです。",
+        "romaji": "Kouza wo tsukuritai desu."
+      },
+      "transfer": {
+        "ja": "おかねを　おくりたいです。",
+        "romaji": "Okane wo okuritai desu."
+      },
+      "balance": {
+        "ja": "おかねが　いくらあるか　みたいです。",
+        "romaji": "Okane ga ikura aru ka mitai desu."
+      }
+    },
+    "hospital": {
+      "reservation": {
+        "ja": "よやくを　したいです。",
+        "romaji": "Yoyaku wo shitai desu."
+      },
+      "symptom": {
+        "ja": "ここが　いたいです。",
+        "romaji": "Koko ga itai desu."
+      },
+      "insurance": {
+        "ja": "ほけんしょうを　もっています。",
+        "romaji": "Hokenshou wo motte imasu."
+      }
+    },
+    "postOffice": {
+      "sendPackage": {
+        "ja": "にもつを　おくりたいです。",
+        "romaji": "Nimotsu wo okuritai desu."
+      },
+      "internationalMail": {
+        "ja": "がいこくに　おくりたいです。",
+        "romaji": "Gaikoku ni okuritai desu."
+      }
+    },
+    "dailyLife": {
+      "dontUnderstand": {
+        "ja": "にほんごが　わかりません。",
+        "romaji": "Nihongo ga wakarimasen."
+      },
+      "speakSlowly": {
+        "ja": "ゆっくり　はなして　ください。",
+        "romaji": "Yukkuri hanashite kudasai."
+      },
+      "writeDown": {
+        "ja": "かいて　もらえますか？",
+        "romaji": "Kaite moraemasu ka?"
+      },
+      "thankyou": {
+        "ja": "ありがとう　ございます。",
+        "romaji": "Arigatou gozaimasu."
+      }
+    }
+  },
+  "copy": "コピー",
+  "copied": "コピーしました"
+}

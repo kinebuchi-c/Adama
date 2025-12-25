@@ -1,0 +1,47 @@
+{
+  "title": "窓口案内",
+  "subtitle": "杉並区の役所・窓口情報",
+  "search": "窓口を検索",
+  "list": {
+    "suginamiCityHall": {
+      "name": "杉並区役所",
+      "address": "〒166-8570 杉並区阿佐谷南1-15-1",
+      "hours": "月〜金 8:30〜17:00",
+      "phone": "03-3312-2111",
+      "description": "住民登録、国民健康保険、年金などの手続き"
+    },
+    "suginamiTaxOffice": {
+      "name": "杉並税務署",
+      "address": "〒167-8506 杉並区荻窪5-15-13",
+      "hours": "月〜金 8:30〜17:00",
+      "phone": "03-3392-1111",
+      "description": "確定申告、税金に関する手続き"
+    },
+    "immigrationBureau": {
+      "name": "東京出入国在留管理局",
+      "address": "〒108-8255 港区港南5-5-30",
+      "hours": "月〜金 9:00〜16:00",
+      "phone": "0570-013904",
+      "description": "在留資格の更新・変更"
+    },
+    "suginamiInternational": {
+      "name": "杉並区交流協会",
+      "address": "〒166-0004 杉並区阿佐谷南3-2-19",
+      "hours": "月〜土 9:00〜21:00",
+      "phone": "03-5378-8833",
+      "description": "外国人相談、日本語教室"
+    }
+  },
+  "floor": {
+    "title": "フロア案内",
+    "counter": "窓口"
+  },
+  "directions": {
+    "title": "アクセス",
+    "byTrain": "電車で",
+    "byBus": "バスで",
+    "onFoot": "徒歩"
+  },
+  "call": "電話する",
+  "map": "地図を見る"
+}

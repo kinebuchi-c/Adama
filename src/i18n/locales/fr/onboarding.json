@@ -1,0 +1,70 @@
+{
+  "title": "Commençons",
+  "subtitle": "Répondez à quelques questions pour recevoir des informations personnalisées",
+  "progress": "{{current}} / {{total}}",
+  "step1": {
+    "title": "Statut de résidence",
+    "question": "Quel est votre statut de résidence?",
+    "options": {
+      "permanent_resident": "Résident permanent",
+      "spouse_japanese": "Conjoint de ressortissant japonais",
+      "spouse_permanent": "Conjoint de résident permanent",
+      "long_term_resident": "Résident de longue durée",
+      "student": "Étudiant",
+      "work_engineer": "Ingénieur/Spécialiste",
+      "work_skilled": "Travailleur qualifié",
+      "work_specified": "Travailleur qualifié spécifié",
+      "work_other": "Autre visa de travail",
+      "dependent": "Personne à charge",
+      "designated_activities": "Activités désignées",
+      "other": "Autre"
+    }
+  },
+  "step2": {
+    "title": "Durée de séjour",
+    "questionDuration": "Combien de temps prévoyez-vous de rester au Japon?",
+    "questionArrival": "Quand êtes-vous arrivé au Japon?",
+    "options": {
+      "under_3months": "Moins de 3 mois",
+      "3months_to_1year": "3 mois à 1 an",
+      "1year_to_3years": "1 à 3 ans",
+      "3years_to_5years": "3 à 5 ans",
+      "over_5years": "Plus de 5 ans",
+      "permanent": "Permanent"
+    }
+  },
+  "step3": {
+    "title": "Situation actuelle",
+    "question": "Sélectionnez les démarches déjà effectuées",
+    "items": {
+      "residenceCard": "Notification de changement d'adresse carte de séjour",
+      "myNumber": "Carte My Number obtenue",
+      "healthInsurance": "Inscrit à l'assurance maladie",
+      "pension": "Inscrit à la retraite",
+      "bankAccount": "Compte bancaire ouvert"
+    }
+  },
+  "step4": {
+    "title": "Domaines nécessitant de l'aide",
+    "question": "Dans quels domaines avez-vous besoin d'aide? (Sélection multiple)",
+    "options": {
+      "housing": "Logement",
+      "medical": "Santé",
+      "education": "Éducation",
+      "childcare": "Garde d'enfants",
+      "employment": "Emploi",
+      "japanese_language": "Langue japonaise",
+      "daily_life": "Vie quotidienne",
+      "legal_administrative": "Juridique/Administratif"
+    }
+  },
+  "step5": {
+    "title": "Paramètre de langue",
+    "question": "Choisissez votre langue préférée pour cette application"
+  },
+  "complete": {
+    "title": "Configuration terminée!",
+    "message": "Nous vous montrerons des informations personnalisées",
+    "startButton": "Commencer"
+  }
+}

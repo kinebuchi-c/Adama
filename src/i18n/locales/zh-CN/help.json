@@ -1,0 +1,78 @@
+{
+  "title": "帮助和紧急联系方式",
+  "subtitle": "需要帮助时",
+  "emergency": {
+    "title": "紧急联系方式",
+    "police": {
+      "name": "警察",
+      "number": "110",
+      "description": "报告犯罪和事故"
+    },
+    "fire": {
+      "name": "消防/救护车",
+      "number": "119",
+      "description": "火灾紧急和救护车"
+    },
+    "coast": {
+      "name": "海上保安厅",
+      "number": "118",
+      "description": "海上紧急事故"
+    }
+  },
+  "consultation": {
+    "title": "咨询服务",
+    "fresc": {
+      "name": "外国人在留支援中心（FRESC）",
+      "number": "0570-011000",
+      "hours": "周一至周五 9:00-17:00",
+      "description": "入境、就业、法律咨询"
+    },
+    "tokyoMultilingual": {
+      "name": "东京多语言咨询热线",
+      "number": "03-6258-1227",
+      "hours": "周一至周五 10:00-16:00",
+      "description": "14种语言电话咨询"
+    },
+    "suginamiInternational": {
+      "name": "杉并区交流协会",
+      "number": "03-5378-8833",
+      "hours": "周一至周六 9:00-21:00",
+      "description": "外国人咨询、生活支援"
+    }
+  },
+  "crisis": {
+    "title": "危机支援",
+    "mentalHealth": {
+      "name": "心理健康热线",
+      "number": "0570-064-556",
+      "description": "心理健康咨询"
+    },
+    "domesticViolence": {
+      "name": "家庭暴力咨询热线",
+      "number": "#8008",
+      "description": "家庭暴力咨询"
+    },
+    "childAbuse": {
+      "name": "虐待儿童举报热线",
+      "number": "189",
+      "description": "举报虐待儿童"
+    },
+    "laborConsultation": {
+      "name": "外国劳工咨询",
+      "number": "0570-001701",
+      "description": "劳动问题咨询"
+    }
+  },
+  "disaster": {
+    "title": "灾害信息",
+    "earthquakeInfo": "地震信息",
+    "typhoonInfo": "台风信息",
+    "evacuationShelter": "避难场所",
+    "disasterVoiceDial": {
+      "name": "灾害留言电话",
+      "number": "171",
+      "description": "灾害时安全确认"
+    }
+  },
+  "call": "拨打电话"
+}

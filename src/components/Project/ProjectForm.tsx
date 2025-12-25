@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Project, ProjectStatus } from '../../types'
-import { STATUS_LABELS } from '../../types'
+import type { Project, ProjectStatus, DiplomacyPhase } from '../../types'
+import { STATUS_LABELS, DIPLOMACY_PHASE_LABELS } from '../../types'
+
+interface ProjectFormData {
+  name: string
+  status: ProjectStatus
+  diplomacyPhase: DiplomacyPhase
+  assignee: string
+  notes: string
+  referrer: string
+  managementUrl: string
+}
 
 interface ProjectFormProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: { name: string; status: ProjectStatus; notes: string }) => void
+  onSubmit: (data: ProjectFormData) => void
   initialData?: Project | null
   countryName: string
 }
@@ -14,17 +24,29 @@ interface ProjectFormProps {
 export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryName }: ProjectFormProps) {
   const [name, setName] = useState('')
   const [status, setStatus] = useState<ProjectStatus>('not_started')
+  const [diplomacyPhase, setDiplomacyPhase] = useState<DiplomacyPhase>(0)
+  const [assignee, setAssignee] = useState('')
   const [notes, setNotes] = useState('')
+  const [referrer, setReferrer] = useState('')
+  const [managementUrl, setManagementUrl] = useState('')
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name)
       setStatus(initialData.status)
+      setDiplomacyPhase(initialData.diplomacyPhase ?? 0)
+      setAssignee(initialData.assignee || '')
       setNotes(initialData.notes || '')
+      setReferrer(initialData.referrer || '')
+      setManagementUrl(initialData.managementUrl || '')
     } else {
       setName('')
       setStatus('not_started')
+      setDiplomacyPhase(0)
+      setAssignee('')
       setNotes('')
+      setReferrer('')
+      setManagementUrl('')
     }
   }, [initialData, isOpen])
 
@@ -32,7 +54,15 @@ export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryNam
     e.preventDefault()
     if (!name.trim()) return
 
-    onSubmit({ name: name.trim(), status, notes: notes.trim() })
+    onSubmit({
+      name: name.trim(),
+      status,
+      diplomacyPhase,
+      assignee: assignee.trim(),
+      notes: notes.trim(),
+      referrer: referrer.trim(),
+      managementUrl: managementUrl.trim(),
+    })
     onClose()
   }
 
@@ -40,7 +70,7 @@ export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryNam
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* オーバーレイ */}
+          {/* オーバーレイ + モーダルコンテナ */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -51,26 +81,26 @@ export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryNam
               inset: 0,
               backgroundColor: 'rgba(0,0,0,0.5)',
               zIndex: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
             }}
-          />
-
+          >
           {/* モーダル */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            onClick={(e) => e.stopPropagation()}
             style={{
-              position: 'fixed',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
               width: '100%',
-              maxWidth: '448px',
+              maxWidth: '500px',
+              maxHeight: 'calc(100vh - 40px)',
               backgroundColor: 'white',
               borderRadius: '16px',
               boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-              zIndex: 50,
-              overflow: 'hidden',
+              overflow: 'auto',
             }}
           >
             <div style={{ padding: '24px' }}>
@@ -103,14 +133,73 @@ export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryNam
                   />
                 </div>
 
-                {/* ステータス */}
+                {/* 2カラム: 外交フェーズ & 進行状況 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  {/* 外交フェーズ */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>
+                      外交フェーズ
+                    </label>
+                    <select
+                      value={diplomacyPhase}
+                      onChange={(e) => setDiplomacyPhase(Number(e.target.value) as DiplomacyPhase)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        outline: 'none',
+                        fontSize: '14px',
+                        backgroundColor: 'white',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {([0, 1, 2, 3, 4] as DiplomacyPhase[]).map((phase) => (
+                        <option key={phase} value={phase}>
+                          {phase}: {DIPLOMACY_PHASE_LABELS[phase]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 進行状況 */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>
+                      進行状況
+                    </label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        outline: 'none',
+                        fontSize: '14px',
+                        backgroundColor: 'white',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 担当者 */}
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>
-                    ステータス
+                    担当者
                   </label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+                  <input
+                    type="text"
+                    value={assignee}
+                    onChange={(e) => setAssignee(e.target.value)}
+                    placeholder="例: 山田太郎"
                     style={{
                       width: '100%',
                       padding: '8px 16px',
@@ -118,16 +207,53 @@ export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryNam
                       borderRadius: '8px',
                       outline: 'none',
                       fontSize: '14px',
-                      backgroundColor: 'white',
                       boxSizing: 'border-box',
                     }}
-                  >
-                    {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
+                  />
+                </div>
+
+                {/* 紹介者 */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>
+                    紹介者（任意）
+                  </label>
+                  <input
+                    type="text"
+                    value={referrer}
+                    onChange={(e) => setReferrer(e.target.value)}
+                    placeholder="例: 田中さん"
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      outline: 'none',
+                      fontSize: '14px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                {/* 管理ページURL */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>
+                    管理ページURL（任意）
+                  </label>
+                  <input
+                    type="url"
+                    value={managementUrl}
+                    onChange={(e) => setManagementUrl(e.target.value)}
+                    placeholder="https://..."
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      outline: 'none',
+                      fontSize: '14px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
                 </div>
 
                 {/* メモ */}
@@ -189,6 +315,7 @@ export function ProjectForm({ isOpen, onClose, onSubmit, initialData, countryNam
                 </div>
               </form>
             </div>
+          </motion.div>
           </motion.div>
         </>
       )}

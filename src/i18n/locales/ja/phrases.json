@@ -1,0 +1,112 @@
+{
+  "title": "便利なフレーズ",
+  "subtitle": "窓口で使えるフレーズ集",
+  "categories": {
+    "cityHall": {
+      "name": "区役所",
+      "icon": "building"
+    },
+    "bank": {
+      "name": "銀行",
+      "icon": "bank"
+    },
+    "hospital": {
+      "name": "病院",
+      "icon": "hospital"
+    },
+    "postOffice": {
+      "name": "郵便局",
+      "icon": "mail"
+    },
+    "dailyLife": {
+      "name": "日常生活",
+      "icon": "home"
+    }
+  },
+  "phrases": {
+    "cityHall": {
+      "greeting": {
+        "ja": "すみません、外国人の手続きをしたいのですが。",
+        "romaji": "Sumimasen, gaikokujin no tetsuzuki wo shitai no desu ga."
+      },
+      "residenceRegistration": {
+        "ja": "住民登録をしたいです。",
+        "romaji": "Juumin touroku wo shitai desu."
+      },
+      "addressChange": {
+        "ja": "住所変更の届出をしたいです。",
+        "romaji": "Juusho henkou no todoke wo shitai desu."
+      },
+      "myNumber": {
+        "ja": "マイナンバーカードを申請したいです。",
+        "romaji": "Mainanbaa kaado wo shinsei shitai desu."
+      },
+      "healthInsurance": {
+        "ja": "国民健康保険に加入したいです。",
+        "romaji": "Kokumin kenkou hoken ni kanyuu shitai desu."
+      },
+      "interpreter": {
+        "ja": "通訳はいますか？",
+        "romaji": "Tsuuyaku wa imasu ka?"
+      }
+    },
+    "bank": {
+      "openAccount": {
+        "ja": "口座を開設したいです。",
+        "romaji": "Kouza wo kaisetsu shitai desu."
+      },
+      "transfer": {
+        "ja": "送金したいです。",
+        "romaji": "Soukin shitai desu."
+      },
+      "balance": {
+        "ja": "残高を確認したいです。",
+        "romaji": "Zandaka wo kakunin shitai desu."
+      }
+    },
+    "hospital": {
+      "reservation": {
+        "ja": "予約をしたいです。",
+        "romaji": "Yoyaku wo shitai desu."
+      },
+      "symptom": {
+        "ja": "ここが痛いです。",
+        "romaji": "Koko ga itai desu."
+      },
+      "insurance": {
+        "ja": "保険証を持っています。",
+        "romaji": "Hokenshou wo motte imasu."
+      }
+    },
+    "postOffice": {
+      "sendPackage": {
+        "ja": "荷物を送りたいです。",
+        "romaji": "Nimotsu wo okuritai desu."
+      },
+      "internationalMail": {
+        "ja": "海外に送りたいです。",
+        "romaji": "Kaigai ni okuritai desu."
+      }
+    },
+    "dailyLife": {
+      "dontUnderstand": {
+        "ja": "日本語がわかりません。",
+        "romaji": "Nihongo ga wakarimasen."
+      },
+      "speakSlowly": {
+        "ja": "ゆっくり話してください。",
+        "romaji": "Yukkuri hanashite kudasai."
+      },
+      "writeDown": {
+        "ja": "書いてもらえますか？",
+        "romaji": "Kaite moraemasu ka?"
+      },
+      "thankyou": {
+        "ja": "ありがとうございます。",
+        "romaji": "Arigatou gozaimasu."
+      }
+    }
+  },
+  "copy": "コピー",
+  "copied": "コピーしました"
+}

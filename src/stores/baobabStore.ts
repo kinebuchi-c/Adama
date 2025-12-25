@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { BaobabGrowth } from '../types'
 import { BAOBAB_LEVELS } from '../types'
-import { getBaobabGrowth, initializeDatabase } from '../db/database'
+import { getBaobabGrowth, initializeDatabase, plantNewTree as dbPlantNewTree } from '../db/database'
 
 interface BaobabState {
   growth: BaobabGrowth | null
@@ -11,6 +11,7 @@ interface BaobabState {
   // Actions
   loadGrowth: () => Promise<void>
   refreshGrowth: () => Promise<void>
+  plantNewTree: () => Promise<void>
   getCurrentLevel: () => typeof BAOBAB_LEVELS[0] | null
   getProgressToNextLevel: () => number
   getPointsToNextLevel: () => number
@@ -36,6 +37,15 @@ export const useBaobabStore = create<BaobabState>((set, get) => ({
     try {
       const growth = await getBaobabGrowth()
       set({ growth: growth || null })
+    } catch (error) {
+      set({ error: (error as Error).message })
+    }
+  },
+
+  plantNewTree: async () => {
+    try {
+      const growth = await dbPlantNewTree()
+      set({ growth })
     } catch (error) {
       set({ error: (error as Error).message })
     }

@@ -1,8 +1,39 @@
 import { motion } from 'framer-motion'
 import { useBaobabStore } from '../../stores/baobabStore'
 
+// 完成した木を描画するコンポーネント
+function CompletedTree({ x, scale = 1 }: { x: number; scale?: number }) {
+  return (
+    <g transform={`translate(${x}, 0) scale(${scale})`}>
+      {/* 草 */}
+      <ellipse cx="50" cy="95" rx="25" ry="5" fill="#7CCD7C" />
+
+      {/* バオバブの幹 */}
+      <path
+        d="M50,95 C35,95 30,80 32,65 C34,50 42,40 50,35 C58,40 66,50 68,65 C70,80 65,95 50,95"
+        fill="#CD853F"
+      />
+      <path
+        d="M48,90 C38,90 35,78 36,68 C37,58 43,50 48,47 C46,55 44,65 45,75 C45,82 46,90 48,90"
+        fill="#DEB887"
+        opacity="0.5"
+      />
+
+      {/* 枝 */}
+      <path d="M40,55 Q30,45 25,40" stroke="#CD853F" strokeWidth="3" strokeLinecap="round" fill="none" />
+      <path d="M60,55 Q70,45 75,40" stroke="#CD853F" strokeWidth="3" strokeLinecap="round" fill="none" />
+
+      {/* 葉っぱ */}
+      <ellipse cx="50" cy="25" rx="20" ry="12" fill="#228B22" />
+      <ellipse cx="50" cy="22" rx="18" ry="10" fill="#32CD32" />
+      <ellipse cx="25" cy="35" rx="12" ry="8" fill="#228B22" />
+      <ellipse cx="75" cy="35" rx="12" ry="8" fill="#228B22" />
+    </g>
+  )
+}
+
 export function BaobabTree() {
-  const { growth, getCurrentLevel, getProgressToNextLevel, getPointsToNextLevel } = useBaobabStore()
+  const { growth, getCurrentLevel, getProgressToNextLevel, getPointsToNextLevel, plantNewTree } = useBaobabStore()
   const currentLevel = getCurrentLevel()
   const progress = getProgressToNextLevel()
   const pointsToNext = getPointsToNextLevel()
@@ -16,6 +47,19 @@ export function BaobabTree() {
   }
 
   const level = growth.level
+  const completedTrees = growth.completedTrees || 0
+  const isMaxLevel = level === 10
+
+  // 森の状態を判定
+  const getForestStatus = () => {
+    if (completedTrees >= 10) return { name: '大森林', emoji: '🌲🌳🌲' }
+    if (completedTrees >= 5) return { name: '小さな森', emoji: '🌳🌳' }
+    if (completedTrees >= 3) return { name: '木立', emoji: '🌳' }
+    if (completedTrees >= 1) return { name: 'バオバブ並木', emoji: '🌴' }
+    return null
+  }
+
+  const forestStatus = getForestStatus()
 
   return (
     <div style={{
@@ -27,7 +71,59 @@ export function BaobabTree() {
       borderRadius: '16px',
       boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
     }}>
-      {/* バオバブSVG */}
+      {/* 森の表示（完成した木がある場合） */}
+      {completedTrees > 0 && (
+        <div style={{
+          width: '100%',
+          marginBottom: '8px',
+          padding: '8px',
+          background: 'linear-gradient(to bottom, #ecfdf5, #d1fae5)',
+          borderRadius: '12px',
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '8px',
+          }}>
+            <span style={{ fontSize: '16px' }}>{forestStatus?.emoji}</span>
+            <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#065f46' }}>
+              {forestStatus?.name}
+            </span>
+            <span style={{ fontSize: '12px', color: '#047857' }}>
+              ({completedTrees}本)
+            </span>
+          </div>
+
+          {/* 完成した木のSVG表示 */}
+          <motion.svg
+            viewBox="0 0 200 100"
+            style={{ width: '100%', height: '60px' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {/* 地面 */}
+            <rect x="0" y="90" width="200" height="10" fill="#90EE90" rx="5" />
+
+            {/* 完成した木を並べる（最大5本表示） */}
+            {Array.from({ length: Math.min(completedTrees, 5) }).map((_, i) => (
+              <CompletedTree
+                key={i}
+                x={10 + i * 38}
+                scale={0.9 - (completedTrees > 3 ? 0.1 : 0)}
+              />
+            ))}
+
+            {/* 5本以上ある場合は「...」表示 */}
+            {completedTrees > 5 && (
+              <text x="185" y="70" fontSize="16" fill="#065f46">+{completedTrees - 5}</text>
+            )}
+          </motion.svg>
+        </div>
+      )}
+
+      {/* 現在育成中のバオバブSVG */}
       <motion.svg
         viewBox="0 0 200 220"
         style={{ width: '208px', height: '208px' }}
@@ -294,7 +390,7 @@ export function BaobabTree() {
       <div style={{ marginTop: '12px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#b45309', marginBottom: '4px' }}>
           <span>{growth.totalPoints} pt</span>
-          {growth.level < 10 && <span>次まで {pointsToNext} pt</span>}
+          {!isMaxLevel && <span>次まで {pointsToNext} pt</span>}
         </div>
         <div style={{ width: '100%', backgroundColor: '#fde68a', borderRadius: '9999px', height: '12px', overflow: 'hidden' }}>
           <motion.div
@@ -309,6 +405,35 @@ export function BaobabTree() {
           />
         </div>
       </div>
+
+      {/* レベル10到達時の「新しい木を植える」ボタン */}
+      {isMaxLevel && (
+        <motion.button
+          onClick={plantNewTree}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          style={{
+            marginTop: '16px',
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <span>🌱</span>
+          <span>新しい木を植える</span>
+        </motion.button>
+      )}
     </div>
   )
 }

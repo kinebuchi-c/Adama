@@ -1,0 +1,47 @@
+{
+  "title": "Guide des bureaux",
+  "subtitle": "Informations sur les bureaux de Suginami",
+  "search": "Rechercher des bureaux",
+  "list": {
+    "suginamiCityHall": {
+      "name": "Mairie de Suginami",
+      "address": "1-15-1 Asagayaminami, Suginami-ku, Tokyo 166-8570",
+      "hours": "Lun-Ven 8h30-17h00",
+      "phone": "03-3312-2111",
+      "description": "Inscription des résidents, assurance maladie, procédures de retraite"
+    },
+    "suginamiTaxOffice": {
+      "name": "Bureau des impôts de Suginami",
+      "address": "5-15-13 Ogikubo, Suginami-ku, Tokyo 167-8506",
+      "hours": "Lun-Ven 8h30-17h00",
+      "phone": "03-3392-1111",
+      "description": "Déclarations fiscales et procédures fiscales"
+    },
+    "immigrationBureau": {
+      "name": "Bureau régional de l'immigration de Tokyo",
+      "address": "5-5-30 Konan, Minato-ku, Tokyo 108-8255",
+      "hours": "Lun-Ven 9h00-16h00",
+      "phone": "0570-013904",
+      "description": "Renouvellement et changement de statut de résidence"
+    },
+    "suginamiInternational": {
+      "name": "Association d'échanges internationaux de Suginami",
+      "address": "3-2-19 Asagayaminami, Suginami-ku, Tokyo 166-0004",
+      "hours": "Lun-Sam 9h00-21h00",
+      "phone": "03-5378-8833",
+      "description": "Consultation pour résidents étrangers, cours de japonais"
+    }
+  },
+  "floor": {
+    "title": "Guide des étages",
+    "counter": "Guichet"
+  },
+  "directions": {
+    "title": "Accès",
+    "byTrain": "En train",
+    "byBus": "En bus",
+    "onFoot": "À pied"
+  },
+  "call": "Appeler",
+  "map": "Voir la carte"
+}

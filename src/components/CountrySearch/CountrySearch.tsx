@@ -1,17 +1,24 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { COUNTRY_DATA } from '../../utils/countryData'
+import { COUNTRY_INFO, COUNTRY_NAMES } from '../../types'
 
 interface CountrySearchProps {
   onSelect: (countryCode: string, countryName: string) => void
 }
 
-// COUNTRY_DATAからISO_A2コード→日本語名のマッピングを生成
+// COUNTRY_INFOとCOUNTRY_NAMESから全ての国を統合
 const ALL_COUNTRIES: Record<string, string> = {
   'MOON': '月 🌙', // 月を先頭に追加
 }
-for (const [, data] of Object.entries(COUNTRY_DATA)) {
-  if (data.iso_a2 && !ALL_COUNTRIES[data.iso_a2]) {
-    ALL_COUNTRIES[data.iso_a2] = data.name_ja
+
+// COUNTRY_INFO（詳細情報あり）から追加
+for (const [code, info] of Object.entries(COUNTRY_INFO)) {
+  ALL_COUNTRIES[code] = info.name
+}
+
+// COUNTRY_NAMES（基本名のみ）から追加（重複しないもののみ）
+for (const [code, name] of Object.entries(COUNTRY_NAMES)) {
+  if (!ALL_COUNTRIES[code]) {
+    ALL_COUNTRIES[code] = name
   }
 }
 

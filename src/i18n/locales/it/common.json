@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "Supporto Nuovi Residenti Suginami",
+    "subtitle": "Guida amministrativa per residenti stranieri"
+  },
+  "nav": {
+    "home": "Home",
+    "tasks": "Attività",
+    "documents": "Documenti",
+    "offices": "Uffici",
+    "life": "Vita quotidiana",
+    "phrases": "Frasi",
+    "info": "Informazioni",
+    "help": "Aiuto"
+  },
+  "actions": {
+    "next": "Avanti",
+    "back": "Indietro",
+    "complete": "Completa",
+    "skip": "Salta",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "search": "Cerca",
+    "close": "Chiudi",
+    "confirm": "Conferma",
+    "start": "Inizia",
+    "viewAll": "Vedi tutto",
+    "learnMore": "Scopri di più"
+  },
+  "status": {
+    "notStarted": "Non iniziato",
+    "inProgress": "In corso",
+    "waiting": "In attesa",
+    "completed": "Completato",
+    "skipped": "Saltato"
+  },
+  "priority": {
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Bassa"
+  },
+  "language": {
+    "select": "Seleziona lingua",
+    "current": "Lingua attuale"
+  },
+  "welcome": {
+    "greeting": "Benvenuto",
+    "message": "Ti aiuteremo a stabilirti a Suginami"
+  },
+  "errors": {
+    "general": "Si è verificato un errore",
+    "networkError": "Errore di rete",
+    "notFound": "Non trovato"
+  },
+  "consultation": {
+    "title": "Servizi di consulenza",
+    "description": "Se hai bisogno di una lingua non elencata, contatta il nostro servizio multilingue",
+    "link": "Vedi servizi di consulenza"
+  }
+}

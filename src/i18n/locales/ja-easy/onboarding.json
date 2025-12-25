@@ -1,0 +1,70 @@
+{
+  "title": "はじめましょう",
+  "subtitle": "あなたに　あう　じょうほうを　おしえるために、しつもんします",
+  "progress": "{{current}} / {{total}}",
+  "step1": {
+    "title": "ビザ",
+    "question": "あなたの　ビザは　なんですか？",
+    "options": {
+      "permanent_resident": "えいじゅうしゃ（ずっと　にほんに　いる）",
+      "spouse_japanese": "にほんじんの　おくさん・だんなさん",
+      "spouse_permanent": "えいじゅうしゃの　おくさん・だんなさん",
+      "long_term_resident": "ていじゅうしゃ",
+      "student": "りゅうがく（がくせい）",
+      "work_engineer": "エンジニア・つうやく",
+      "work_skilled": "コック・とくべつな　しごと",
+      "work_specified": "とくていぎのう",
+      "work_other": "ほかの　しごとの　ビザ",
+      "dependent": "かぞく　ビザ",
+      "designated_activities": "とくていかつどう",
+      "other": "その　ほか"
+    }
+  },
+  "step2": {
+    "title": "にほんに　いる　きかん",
+    "questionDuration": "どのくらい　にほんに　いますか？",
+    "questionArrival": "いつ　にほんに　きましたか？",
+    "options": {
+      "under_3months": "3かげつ　より　みじかい",
+      "3months_to_1year": "3かげつ　から　1ねん",
+      "1year_to_3years": "1ねん　から　3ねん",
+      "3years_to_5years": "3ねん　から　5ねん",
+      "over_5years": "5ねん　より　ながい",
+      "permanent": "ずっと　いる"
+    }
+  },
+  "step3": {
+    "title": "いまの　じょうきょう",
+    "question": "おわった　てつづきを　えらんでください",
+    "items": {
+      "residenceCard": "ざいりゅうカードの　とどけ（じゅうしょ　かえた）",
+      "myNumber": "マイナンバーカードを　もらった",
+      "healthInsurance": "けんこうほけんに　はいった",
+      "pension": "ねんきんに　はいった",
+      "bankAccount": "ぎんこうの　こうざを　つくった"
+    }
+  },
+  "step4": {
+    "title": "サポートが　ほしい　こと",
+    "question": "どんな　サポートが　ほしいですか？（いくつでも　えらべます）",
+    "options": {
+      "housing": "すむ　ところ",
+      "medical": "びょういん",
+      "education": "がっこう",
+      "childcare": "こどもの　せわ",
+      "employment": "しごと",
+      "japanese_language": "にほんごの　べんきょう",
+      "daily_life": "まいにちの　せいかつ",
+      "legal_administrative": "やくしょの　てつづき"
+    }
+  },
+  "step5": {
+    "title": "ことばの　せってい",
+    "question": "この　アプリで　つかう　ことばを　えらんでください"
+  },
+  "complete": {
+    "title": "おわりました！",
+    "message": "あなたに　あう　じょうほうを　おしえます",
+    "startButton": "はじめる"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "title": "はじめましょう",
+  "subtitle": "あなたに合った情報をお届けするために、いくつか質問させてください",
+  "progress": "{{current}} / {{total}}",
+  "step1": {
+    "title": "在留資格",
+    "question": "あなたの在留資格を教えてください",
+    "options": {
+      "permanent_resident": "永住者",
+      "spouse_japanese": "日本人の配偶者等",
+      "spouse_permanent": "永住者の配偶者等",
+      "long_term_resident": "定住者",
+      "student": "留学",
+      "work_engineer": "技術・人文知識・国際業務",
+      "work_skilled": "技能",
+      "work_specified": "特定技能",
+      "work_other": "その他の就労ビザ",
+      "dependent": "家族滞在",
+      "designated_activities": "特定活動",
+      "other": "その他"
+    }
+  },
+  "step2": {
+    "title": "滞在予定",
+    "questionDuration": "日本にどのくらい滞在する予定ですか？",
+    "questionArrival": "いつ日本に来ましたか？",
+    "options": {
+      "under_3months": "3ヶ月未満",
+      "3months_to_1year": "3ヶ月〜1年",
+      "1year_to_3years": "1年〜3年",
+      "3years_to_5years": "3年〜5年",
+      "over_5years": "5年以上",
+      "permanent": "永住予定"
+    }
+  },
+  "step3": {
+    "title": "現在の状況",
+    "question": "すでに完了している手続きを選んでください",
+    "items": {
+      "residenceCard": "在留カードの届出（住所変更）",
+      "myNumber": "マイナンバーカードの取得",
+      "healthInsurance": "健康保険への加入",
+      "pension": "年金への加入",
+      "bankAccount": "銀行口座の開設"
+    }
+  },
+  "step4": {
+    "title": "サポートが必要な分野",
+    "question": "どの分野のサポートが必要ですか？（複数選択可）",
+    "options": {
+      "housing": "住まい",
+      "medical": "医療",
+      "education": "教育",
+      "childcare": "子育て",
+      "employment": "仕事",
+      "japanese_language": "日本語学習",
+      "daily_life": "日常生活",
+      "legal_administrative": "法律・行政手続き"
+    }
+  },
+  "step5": {
+    "title": "言語設定",
+    "question": "このアプリで使用する言語を選んでください"
+  },
+  "complete": {
+    "title": "設定完了！",
+    "message": "あなたに合った情報をご案内します",
+    "startButton": "はじめる"
+  }
+}

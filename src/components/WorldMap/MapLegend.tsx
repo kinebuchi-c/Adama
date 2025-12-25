@@ -2,9 +2,8 @@ import { STATUS_COLORS, STATUS_LABELS, type ProjectStatus } from '../../types'
 
 const statusOrder: ProjectStatus[] = [
   'not_started',
-  'planning',
+  'preparing',
   'in_progress',
-  'review',
   'completed',
 ]
 

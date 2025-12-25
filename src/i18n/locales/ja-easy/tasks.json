@@ -1,0 +1,66 @@
+{
+  "title": "やること　リスト",
+  "subtitle": "いま　やること　を　たしかめましょう",
+  "filter": {
+    "all": "ぜんぶ",
+    "priority": "たいせつ",
+    "category": "しゅるい"
+  },
+  "timeline": {
+    "thisWeek": "こんしゅう",
+    "thisMonth": "こんげつ",
+    "later": "あとで"
+  },
+  "categories": {
+    "residence": "ビザの　てつづき",
+    "municipal": "やくしょの　てつづき",
+    "insurance": "ほけん・ねんきん",
+    "daily_life": "せいかつ",
+    "work": "しごと",
+    "education": "がっこう"
+  },
+  "templates": {
+    "residence_card": {
+      "title": "ざいりゅうカードの　とどけ",
+      "description": "じゅうしょを　かえたら　14にち　いないに　とどけます"
+    },
+    "residence_registration": {
+      "title": "じゅうみん　とうろく",
+      "description": "すぎなみくやくしょで　じゅうみん　とうろくを　します"
+    },
+    "my_number": {
+      "title": "マイナンバーの　おしらせ",
+      "description": "じゅうみん　とうろくの　あと、マイナンバーの　かみが　きます"
+    },
+    "health_insurance": {
+      "title": "けんこうほけんに　はいる",
+      "description": "こくみん　けんこうほけん　か　かいしゃの　ほけんに　はいります"
+    },
+    "pension": {
+      "title": "ねんきんに　はいる",
+      "description": "こくみん　ねんきん　か　こうせい　ねんきんに　はいります"
+    },
+    "bank_account": {
+      "title": "ぎんこうの　こうざを　つくる",
+      "description": "おかねを　もらったり　はらったり　するために　ひつようです"
+    },
+    "garbage_rules": {
+      "title": "ゴミの　だしかたを　たしかめる",
+      "description": "すぎなみくの　ゴミの　ルールを　たしかめてください"
+    },
+    "emergency_contact": {
+      "title": "きゅうきゅうの　でんわを　おぼえる",
+      "description": "110（けいさつ）、119（きゅうきゅうしゃ）を　おぼえましょう"
+    }
+  },
+  "empty": {
+    "title": "タスクが　ありません",
+    "message": "ぜんぶの　タスクが　おわりました"
+  },
+  "detail": {
+    "linkedDocuments": "かんけいする　しょるい",
+    "externalLinks": "リンク",
+    "notes": "メモ",
+    "addNote": "メモを　かく"
+  }
+}

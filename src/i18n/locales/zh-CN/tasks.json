@@ -1,0 +1,66 @@
+{
+  "title": "待办事项列表",
+  "subtitle": "查看您现在需要做什么",
+  "filter": {
+    "all": "全部",
+    "priority": "优先级",
+    "category": "类别"
+  },
+  "timeline": {
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "later": "以后"
+  },
+  "categories": {
+    "residence": "居留手续",
+    "municipal": "市政厅手续",
+    "insurance": "保险和年金",
+    "daily_life": "日常生活",
+    "work": "就业",
+    "education": "教育"
+  },
+  "templates": {
+    "residence_card": {
+      "title": "在留卡通知",
+      "description": "地址变更后14天内必须通知"
+    },
+    "residence_registration": {
+      "title": "居民登记",
+      "description": "在杉并区役所登记"
+    },
+    "my_number": {
+      "title": "个人编号通知",
+      "description": "居民登记后将收到个人编号"
+    },
+    "health_insurance": {
+      "title": "加入健康保险",
+      "description": "加入国民健康保险或雇主保险"
+    },
+    "pension": {
+      "title": "加入年金",
+      "description": "必须加入国民年金或厚生年金"
+    },
+    "bank_account": {
+      "title": "开立银行账户",
+      "description": "用于工资和公共费用支付"
+    },
+    "garbage_rules": {
+      "title": "了解垃圾分类规则",
+      "description": "查看杉并区的垃圾分类规则"
+    },
+    "emergency_contact": {
+      "title": "记住紧急电话",
+      "description": "记住110（警察）、119（消防/救护车）"
+    }
+  },
+  "empty": {
+    "title": "没有任务",
+    "message": "所有任务已完成"
+  },
+  "detail": {
+    "linkedDocuments": "相关文件",
+    "externalLinks": "参考链接",
+    "notes": "备注",
+    "addNote": "添加备注"
+  }
+}

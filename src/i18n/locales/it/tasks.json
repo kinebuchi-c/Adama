@@ -1,0 +1,66 @@
+{
+  "title": "Elenco attività",
+  "subtitle": "Controlla cosa devi fare ora",
+  "filter": {
+    "all": "Tutto",
+    "priority": "Priorità",
+    "category": "Categoria"
+  },
+  "timeline": {
+    "thisWeek": "Questa settimana",
+    "thisMonth": "Questo mese",
+    "later": "Più tardi"
+  },
+  "categories": {
+    "residence": "Procedure di residenza",
+    "municipal": "Procedure comunali",
+    "insurance": "Assicurazione e pensione",
+    "daily_life": "Vita quotidiana",
+    "work": "Lavoro",
+    "education": "Istruzione"
+  },
+  "templates": {
+    "residence_card": {
+      "title": "Notifica carta di soggiorno",
+      "description": "Da notificare entro 14 giorni dal cambio di indirizzo"
+    },
+    "residence_registration": {
+      "title": "Registrazione residenza",
+      "description": "Registrati al municipio di Suginami"
+    },
+    "my_number": {
+      "title": "Notifica My Number",
+      "description": "Riceverai il My Number dopo la registrazione"
+    },
+    "health_insurance": {
+      "title": "Iscrizione assicurazione sanitaria",
+      "description": "Iscriviti all'assicurazione sanitaria nazionale o del datore di lavoro"
+    },
+    "pension": {
+      "title": "Iscrizione pensione",
+      "description": "Devi iscriverti alla pensione nazionale o dei dipendenti"
+    },
+    "bank_account": {
+      "title": "Apertura conto bancario",
+      "description": "Necessario per stipendio e bollette"
+    },
+    "garbage_rules": {
+      "title": "Imparare le regole sui rifiuti",
+      "description": "Controlla le regole di smaltimento di Suginami"
+    },
+    "emergency_contact": {
+      "title": "Imparare i numeri di emergenza",
+      "description": "Ricorda 110 (Polizia), 119 (Pompieri/Ambulanza)"
+    }
+  },
+  "empty": {
+    "title": "Nessuna attività",
+    "message": "Tutte le attività sono state completate"
+  },
+  "detail": {
+    "linkedDocuments": "Documenti correlati",
+    "externalLinks": "Link di riferimento",
+    "notes": "Note",
+    "addNote": "Aggiungi nota"
+  }
+}

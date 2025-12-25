@@ -1,0 +1,77 @@
+{
+  "title": "Gestion des documents",
+  "subtitle": "Vérifiez et enregistrez vos documents requis",
+  "stats": {
+    "obtained": "Obtenus",
+    "total": "Total"
+  },
+  "status": {
+    "not_obtained": "Non obtenu",
+    "in_process": "En cours",
+    "obtained": "Obtenu",
+    "expired": "Expiré"
+  },
+  "types": {
+    "residence_card": {
+      "name": "Carte de séjour",
+      "description": "Carte d'identité pour les résidents étrangers"
+    },
+    "passport": {
+      "name": "Passeport",
+      "description": "Votre passeport national"
+    },
+    "my_number": {
+      "name": "Carte My Number",
+      "description": "Carte de numéro individuel"
+    },
+    "health_insurance": {
+      "name": "Carte d'assurance maladie",
+      "description": "Requise dans les établissements médicaux"
+    },
+    "pension_book": {
+      "name": "Livret de retraite",
+      "description": "Registre d'inscription à la retraite"
+    },
+    "bank_card": {
+      "name": "Carte bancaire",
+      "description": "Délivrée après l'ouverture du compte"
+    },
+    "employment_contract": {
+      "name": "Contrat de travail",
+      "description": "Contrat avec l'employeur"
+    },
+    "certificate_eligibility": {
+      "name": "Certificat d'éligibilité",
+      "description": "Certificat pour la demande de visa"
+    },
+    "juminhyo": {
+      "name": "Certificat de résidence",
+      "description": "Document prouvant l'adresse"
+    },
+    "seal_registration": {
+      "name": "Certificat d'enregistrement du sceau",
+      "description": "Certificat de sceau officiel"
+    },
+    "other": {
+      "name": "Autre",
+      "description": "Autres documents"
+    }
+  },
+  "photo": {
+    "add": "Ajouter une photo",
+    "capture": "Prendre une photo",
+    "upload": "Télécharger",
+    "front": "Recto",
+    "back": "Verso",
+    "delete": "Supprimer la photo"
+  },
+  "expiration": {
+    "label": "Date d'expiration",
+    "expired": "Expiré",
+    "expiringSoon": "Expire bientôt"
+  },
+  "empty": {
+    "title": "Aucun document",
+    "message": "Terminez l'intégration pour voir les documents requis"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "title": "Iniziamo",
+  "subtitle": "Rispondi ad alcune domande per ricevere informazioni personalizzate",
+  "progress": "{{current}} / {{total}}",
+  "step1": {
+    "title": "Stato di residenza",
+    "question": "Qual è il tuo stato di residenza?",
+    "options": {
+      "permanent_resident": "Residente permanente",
+      "spouse_japanese": "Coniuge di cittadino giapponese",
+      "spouse_permanent": "Coniuge di residente permanente",
+      "long_term_resident": "Residente a lungo termine",
+      "student": "Studente",
+      "work_engineer": "Ingegnere/Specialista",
+      "work_skilled": "Lavoratore qualificato",
+      "work_specified": "Lavoratore qualificato specificato",
+      "work_other": "Altro visto di lavoro",
+      "dependent": "Familiare a carico",
+      "designated_activities": "Attività designate",
+      "other": "Altro"
+    }
+  },
+  "step2": {
+    "title": "Durata del soggiorno",
+    "questionDuration": "Quanto tempo pensi di restare in Giappone?",
+    "questionArrival": "Quando sei arrivato in Giappone?",
+    "options": {
+      "under_3months": "Meno di 3 mesi",
+      "3months_to_1year": "Da 3 mesi a 1 anno",
+      "1year_to_3years": "Da 1 a 3 anni",
+      "3years_to_5years": "Da 3 a 5 anni",
+      "over_5years": "Più di 5 anni",
+      "permanent": "Permanente"
+    }
+  },
+  "step3": {
+    "title": "Situazione attuale",
+    "question": "Seleziona le procedure già completate",
+    "items": {
+      "residenceCard": "Notifica cambio indirizzo carta di soggiorno",
+      "myNumber": "Carta My Number ottenuta",
+      "healthInsurance": "Iscritto all'assicurazione sanitaria",
+      "pension": "Iscritto alla pensione",
+      "bankAccount": "Conto bancario aperto"
+    }
+  },
+  "step4": {
+    "title": "Aree che necessitano supporto",
+    "question": "In quali aree hai bisogno di aiuto? (Selezione multipla)",
+    "options": {
+      "housing": "Alloggio",
+      "medical": "Sanità",
+      "education": "Istruzione",
+      "childcare": "Cura dei bambini",
+      "employment": "Lavoro",
+      "japanese_language": "Lingua giapponese",
+      "daily_life": "Vita quotidiana",
+      "legal_administrative": "Legale/Amministrativo"
+    }
+  },
+  "step5": {
+    "title": "Impostazione lingua",
+    "question": "Scegli la lingua preferita per questa app"
+  },
+  "complete": {
+    "title": "Configurazione completata!",
+    "message": "Ti mostreremo informazioni personalizzate",
+    "startButton": "Inizia"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "title": "文件管理",
+  "subtitle": "检查并保存所需文件",
+  "stats": {
+    "obtained": "已获得",
+    "total": "总计"
+  },
+  "status": {
+    "not_obtained": "未获得",
+    "in_process": "办理中",
+    "obtained": "已获得",
+    "expired": "已过期"
+  },
+  "types": {
+    "residence_card": {
+      "name": "在留卡",
+      "description": "外国居民身份证"
+    },
+    "passport": {
+      "name": "护照",
+      "description": "您的母国护照"
+    },
+    "my_number": {
+      "name": "个人编号卡",
+      "description": "个人号码卡"
+    },
+    "health_insurance": {
+      "name": "健康保险证",
+      "description": "医疗机构需要出示"
+    },
+    "pension_book": {
+      "name": "年金手册",
+      "description": "年金登记记录"
+    },
+    "bank_card": {
+      "name": "银行卡",
+      "description": "开户后发放"
+    },
+    "employment_contract": {
+      "name": "雇佣合同",
+      "description": "与雇主的合同"
+    },
+    "certificate_eligibility": {
+      "name": "在留资格认定证明书",
+      "description": "签证申请证明"
+    },
+    "juminhyo": {
+      "name": "住民票",
+      "description": "证明地址的文件"
+    },
+    "seal_registration": {
+      "name": "印章登记证明",
+      "description": "官方印章证明"
+    },
+    "other": {
+      "name": "其他",
+      "description": "其他文件"
+    }
+  },
+  "photo": {
+    "add": "添加照片",
+    "capture": "拍照",
+    "upload": "上传",
+    "front": "正面",
+    "back": "背面",
+    "delete": "删除照片"
+  },
+  "expiration": {
+    "label": "有效期",
+    "expired": "已过期",
+    "expiringSoon": "即将过期"
+  },
+  "empty": {
+    "title": "没有文件",
+    "message": "完成引导后将显示所需文件"
+  }
+}

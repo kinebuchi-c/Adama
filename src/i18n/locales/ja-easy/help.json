@@ -1,0 +1,78 @@
+{
+  "title": "ヘルプ・きゅうきゅう",
+  "subtitle": "こまったときは　ここ",
+  "emergency": {
+    "title": "きゅうきゅうの　でんわ",
+    "police": {
+      "name": "けいさつ",
+      "number": "110",
+      "description": "じけん・じこの　ほうこく"
+    },
+    "fire": {
+      "name": "しょうぼう・きゅうきゅうしゃ",
+      "number": "119",
+      "description": "かじ・きゅうきゅうしゃを　よぶ"
+    },
+    "coast": {
+      "name": "うみの　じこ",
+      "number": "118",
+      "description": "うみで　じこが　あったとき"
+    }
+  },
+  "consultation": {
+    "title": "そうだん　まどぐち",
+    "fresc": {
+      "name": "がいこくじん　しえん　センター（FRESC）",
+      "number": "0570-011000",
+      "hours": "げつ〜きん　9:00〜17:00",
+      "description": "ビザ、しごと、ほうりつの　そうだん"
+    },
+    "tokyoMultilingual": {
+      "name": "とうきょうと　たげんご　そうだん",
+      "number": "03-6258-1227",
+      "hours": "げつ〜きん　10:00〜16:00",
+      "description": "14の　ことばで　そうだん　できます"
+    },
+    "suginamiInternational": {
+      "name": "すぎなみく　こうりゅう　きょうかい",
+      "number": "03-5378-8833",
+      "hours": "げつ〜ど　9:00〜21:00",
+      "description": "がいこくじんの　そうだん、せいかつの　サポート"
+    }
+  },
+  "crisis": {
+    "title": "こまったときは",
+    "mentalHealth": {
+      "name": "こころの　けんこう　そうだん",
+      "number": "0570-064-556",
+      "description": "こころの　なやみの　そうだん"
+    },
+    "domesticViolence": {
+      "name": "DV（かていない　ぼうりょく）そうだん",
+      "number": "#8008",
+      "description": "いえで　ぼうりょくを　うけたとき"
+    },
+    "childAbuse": {
+      "name": "こども　ぎゃくたい　そうだん",
+      "number": "189",
+      "description": "こどもが　ひどいめに　あっているとき"
+    },
+    "laborConsultation": {
+      "name": "がいこくじん　ろうどうしゃ　そうだん",
+      "number": "0570-001701",
+      "description": "しごとの　もんだいの　そうだん"
+    }
+  },
+  "disaster": {
+    "title": "さいがい　じょうほう",
+    "earthquakeInfo": "じしん　じょうほう",
+    "typhoonInfo": "たいふう　じょうほう",
+    "evacuationShelter": "ひなん　ばしょ",
+    "disasterVoiceDial": {
+      "name": "さいがいよう　でんごん　ダイヤル",
+      "number": "171",
+      "description": "さいがいのとき　あんぴの　かくにん"
+    }
+  },
+  "call": "でんわする"
+}

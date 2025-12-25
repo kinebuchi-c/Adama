@@ -1,18 +1,29 @@
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import type { Project, ProjectStatus } from '../../types'
+import type { Project, ProjectStatus, DiplomacyPhase } from '../../types'
 import { ProjectCard } from './ProjectCard'
 import { ProjectForm } from './ProjectForm'
 import { STATUS_LABELS } from '../../types'
+
+interface ProjectFormData {
+  name: string
+  status: ProjectStatus
+  diplomacyPhase: DiplomacyPhase
+  assignee: string
+  notes: string
+  referrer: string
+  managementUrl: string
+}
 
 interface ProjectListProps {
   projects: Project[]
   countryCode: string
   countryName: string
-  onAddProject: (data: { name: string; status: ProjectStatus; notes: string }) => void
-  onUpdateProject: (id: string, data: { name: string; status: ProjectStatus; notes: string }) => void
+  onAddProject: (data: ProjectFormData) => void
+  onUpdateProject: (id: string, data: ProjectFormData) => void
   onDeleteProject: (id: string) => void
   onStatusChange: (id: string, status: ProjectStatus) => void
+  onDiplomacyPhaseChange: (id: string, phase: DiplomacyPhase) => void
 }
 
 export function ProjectList({
@@ -23,6 +34,7 @@ export function ProjectList({
   onUpdateProject,
   onDeleteProject,
   onStatusChange,
+  onDiplomacyPhaseChange,
 }: ProjectListProps) {
   void _countryCode // 将来の拡張用
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -50,7 +62,7 @@ export function ProjectList({
     }
   }
 
-  const handleFormSubmit = (data: { name: string; status: ProjectStatus; notes: string }) => {
+  const handleFormSubmit = (data: ProjectFormData) => {
     if (editingProject) {
       onUpdateProject(editingProject.id, data)
     } else {
@@ -89,7 +101,7 @@ export function ProjectList({
         </button>
       </div>
 
-      {/* フィルター */}
+      {/* フィルター（4段階に簡略化） */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '8px' }}>
         <button
           onClick={() => setFilter('all')}
@@ -160,7 +172,7 @@ export function ProjectList({
         <div style={{
           display: 'grid',
           gap: '16px',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
         }}>
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project) => (
@@ -170,6 +182,7 @@ export function ProjectList({
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onStatusChange={onStatusChange}
+                onDiplomacyPhaseChange={onDiplomacyPhaseChange}
               />
             ))}
           </AnimatePresence>

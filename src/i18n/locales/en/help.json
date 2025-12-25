@@ -1,0 +1,78 @@
+{
+  "title": "Help & Emergency Contacts",
+  "subtitle": "When you need assistance",
+  "emergency": {
+    "title": "Emergency Contacts",
+    "police": {
+      "name": "Police",
+      "number": "110",
+      "description": "Report crimes and accidents"
+    },
+    "fire": {
+      "name": "Fire/Ambulance",
+      "number": "119",
+      "description": "Fire emergency and ambulance"
+    },
+    "coast": {
+      "name": "Coast Guard",
+      "number": "118",
+      "description": "Maritime emergencies"
+    }
+  },
+  "consultation": {
+    "title": "Consultation Services",
+    "fresc": {
+      "name": "Foreign Residents Support Center (FRESC)",
+      "number": "0570-011000",
+      "hours": "Mon-Fri 9:00-17:00",
+      "description": "Immigration, employment, legal consultation"
+    },
+    "tokyoMultilingual": {
+      "name": "Tokyo Multilingual Consultation Navi",
+      "number": "03-6258-1227",
+      "hours": "Mon-Fri 10:00-16:00",
+      "description": "Phone consultation in 14 languages"
+    },
+    "suginamiInternational": {
+      "name": "Suginami International Exchange Association",
+      "number": "03-5378-8833",
+      "hours": "Mon-Sat 9:00-21:00",
+      "description": "Foreign resident consultation, life support"
+    }
+  },
+  "crisis": {
+    "title": "Crisis Support",
+    "mentalHealth": {
+      "name": "Mental Health Hotline",
+      "number": "0570-064-556",
+      "description": "Mental health consultation"
+    },
+    "domesticViolence": {
+      "name": "DV Consultation Navi",
+      "number": "#8008",
+      "description": "Domestic violence consultation"
+    },
+    "childAbuse": {
+      "name": "Child Abuse Hotline",
+      "number": "189",
+      "description": "Report child abuse"
+    },
+    "laborConsultation": {
+      "name": "Foreign Worker Consultation",
+      "number": "0570-001701",
+      "description": "Labor issues consultation"
+    }
+  },
+  "disaster": {
+    "title": "Disaster Information",
+    "earthquakeInfo": "Earthquake Information",
+    "typhoonInfo": "Typhoon Information",
+    "evacuationShelter": "Evacuation Shelters",
+    "disasterVoiceDial": {
+      "name": "Disaster Message Dial",
+      "number": "171",
+      "description": "Safety confirmation during disasters"
+    }
+  },
+  "call": "Call"
+}

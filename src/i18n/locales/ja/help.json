@@ -1,0 +1,78 @@
+{
+  "title": "ヘルプ・緊急連絡先",
+  "subtitle": "困ったときはこちら",
+  "emergency": {
+    "title": "緊急連絡先",
+    "police": {
+      "name": "警察",
+      "number": "110",
+      "description": "事件・事故の通報"
+    },
+    "fire": {
+      "name": "消防・救急",
+      "number": "119",
+      "description": "火事・救急車の要請"
+    },
+    "coast": {
+      "name": "海上保安庁",
+      "number": "118",
+      "description": "海での事故"
+    }
+  },
+  "consultation": {
+    "title": "相談窓口",
+    "fresc": {
+      "name": "外国人在留支援センター（FRESC）",
+      "number": "0570-011000",
+      "hours": "月〜金 9:00〜17:00",
+      "description": "在留手続き、雇用、法律相談"
+    },
+    "tokyoMultilingual": {
+      "name": "東京都多言語相談ナビ",
+      "number": "03-6258-1227",
+      "hours": "月〜金 10:00〜16:00",
+      "description": "14言語対応の電話相談"
+    },
+    "suginamiInternational": {
+      "name": "杉並区交流協会",
+      "number": "03-5378-8833",
+      "hours": "月〜土 9:00〜21:00",
+      "description": "外国人相談、生活支援"
+    }
+  },
+  "crisis": {
+    "title": "困ったときは",
+    "mentalHealth": {
+      "name": "こころの健康相談統一ダイヤル",
+      "number": "0570-064-556",
+      "description": "メンタルヘルスの相談"
+    },
+    "domesticViolence": {
+      "name": "DV相談ナビ",
+      "number": "#8008",
+      "description": "家庭内暴力の相談"
+    },
+    "childAbuse": {
+      "name": "児童相談所虐待対応ダイヤル",
+      "number": "189",
+      "description": "児童虐待の通報・相談"
+    },
+    "laborConsultation": {
+      "name": "外国人労働者相談コーナー",
+      "number": "0570-001701",
+      "description": "労働問題の相談"
+    }
+  },
+  "disaster": {
+    "title": "災害情報",
+    "earthquakeInfo": "地震情報",
+    "typhoonInfo": "台風情報",
+    "evacuationShelter": "避難場所",
+    "disasterVoiceDial": {
+      "name": "災害用伝言ダイヤル",
+      "number": "171",
+      "description": "災害時の安否確認"
+    }
+  },
+  "call": "電話する"
+}

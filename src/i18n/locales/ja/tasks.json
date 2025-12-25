@@ -1,0 +1,66 @@
+{
+  "title": "やることリスト",
+  "subtitle": "今やるべきことを確認しましょう",
+  "filter": {
+    "all": "すべて",
+    "priority": "優先度",
+    "category": "カテゴリ"
+  },
+  "timeline": {
+    "thisWeek": "今週",
+    "thisMonth": "今月",
+    "later": "その後"
+  },
+  "categories": {
+    "residence": "在留手続き",
+    "municipal": "市役所手続き",
+    "insurance": "保険・年金",
+    "daily_life": "生活",
+    "work": "就労",
+    "education": "教育"
+  },
+  "templates": {
+    "residence_card": {
+      "title": "在留カードの届出",
+      "description": "住所変更後14日以内に届出が必要です"
+    },
+    "residence_registration": {
+      "title": "住民登録",
+      "description": "杉並区役所で住民登録をしてください"
+    },
+    "my_number": {
+      "title": "マイナンバーの通知",
+      "description": "住民登録後、マイナンバー通知書が届きます"
+    },
+    "health_insurance": {
+      "title": "健康保険への加入",
+      "description": "国民健康保険または勤務先の保険に加入してください"
+    },
+    "pension": {
+      "title": "年金への加入",
+      "description": "国民年金または厚生年金への加入が必要です"
+    },
+    "bank_account": {
+      "title": "銀行口座の開設",
+      "description": "給与受取や公共料金支払いに必要です"
+    },
+    "garbage_rules": {
+      "title": "ゴミの出し方を確認",
+      "description": "杉並区のゴミ分別ルールを確認してください"
+    },
+    "emergency_contact": {
+      "title": "緊急連絡先の確認",
+      "description": "110番（警察）、119番（消防・救急）を覚えておきましょう"
+    }
+  },
+  "empty": {
+    "title": "タスクがありません",
+    "message": "すべてのタスクが完了しました"
+  },
+  "detail": {
+    "linkedDocuments": "関連書類",
+    "externalLinks": "参考リンク",
+    "notes": "メモ",
+    "addNote": "メモを追加"
+  }
+}

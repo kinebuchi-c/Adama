@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "Aide aux nouveaux résidents de Suginami",
+    "subtitle": "Guide administratif pour les résidents étrangers"
+  },
+  "nav": {
+    "home": "Accueil",
+    "tasks": "Tâches",
+    "documents": "Documents",
+    "offices": "Bureaux",
+    "life": "Vie quotidienne",
+    "phrases": "Phrases",
+    "info": "Informations",
+    "help": "Aide"
+  },
+  "actions": {
+    "next": "Suivant",
+    "back": "Retour",
+    "complete": "Terminer",
+    "skip": "Ignorer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "search": "Rechercher",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "start": "Commencer",
+    "viewAll": "Voir tout",
+    "learnMore": "En savoir plus"
+  },
+  "status": {
+    "notStarted": "Non commencé",
+    "inProgress": "En cours",
+    "waiting": "En attente",
+    "completed": "Terminé",
+    "skipped": "Ignoré"
+  },
+  "priority": {
+    "high": "Haute",
+    "medium": "Moyenne",
+    "low": "Basse"
+  },
+  "language": {
+    "select": "Choisir la langue",
+    "current": "Langue actuelle"
+  },
+  "welcome": {
+    "greeting": "Bienvenue",
+    "message": "Nous vous aiderons à vous installer à Suginami"
+  },
+  "errors": {
+    "general": "Une erreur s'est produite",
+    "networkError": "Erreur réseau",
+    "notFound": "Non trouvé"
+  },
+  "consultation": {
+    "title": "Services de consultation",
+    "description": "Si vous avez besoin d'une langue non répertoriée, contactez notre service multilingue",
+    "link": "Voir les services de consultation"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "title": "常用语",
+  "subtitle": "在窗口使用的常用语",
+  "categories": {
+    "cityHall": {
+      "name": "区役所",
+      "icon": "building"
+    },
+    "bank": {
+      "name": "银行",
+      "icon": "bank"
+    },
+    "hospital": {
+      "name": "医院",
+      "icon": "hospital"
+    },
+    "postOffice": {
+      "name": "邮局",
+      "icon": "mail"
+    },
+    "dailyLife": {
+      "name": "日常生活",
+      "icon": "home"
+    }
+  },
+  "phrases": {
+    "cityHall": {
+      "greeting": {
+        "ja": "すみません、外国人の手続きをしたいのですが。",
+        "romaji": "Sumimasen, gaikokujin no tetsuzuki wo shitai no desu ga.",
+        "translation": "打扰一下，我想办理外国人手续。"
+      },
+      "residenceRegistration": {
+        "ja": "住民登録をしたいです。",
+        "romaji": "Juumin touroku wo shitai desu.",
+        "translation": "我想进行居民登记。"
+      },
+      "addressChange": {
+        "ja": "住所変更の届出をしたいです。",
+        "romaji": "Juusho henkou no todoke wo shitai desu.",
+        "translation": "我想申报地址变更。"
+      },
+      "myNumber": {
+        "ja": "マイナンバーカードを申請したいです。",
+        "romaji": "Mainanbaa kaado wo shinsei shitai desu.",
+        "translation": "我想申请个人编号卡。"
+      },
+      "healthInsurance": {
+        "ja": "国民健康保険に加入したいです。",
+        "romaji": "Kokumin kenkou hoken ni kanyuu shitai desu.",
+        "translation": "我想加入国民健康保险。"
+      },
+      "interpreter": {
+        "ja": "通訳はいますか？",
+        "romaji": "Tsuuyaku wa imasu ka?",
+        "translation": "有翻译吗？"
+      }
+    },
+    "bank": {
+      "openAccount": {
+        "ja": "口座を開設したいです。",
+        "romaji": "Kouza wo kaisetsu shitai desu.",
+        "translation": "我想开户。"
+      },
+      "transfer": {
+        "ja": "送金したいです。",
+        "romaji": "Soukin shitai desu.",
+        "translation": "我想汇款。"
+      },
+      "balance": {
+        "ja": "残高を確認したいです。",
+        "romaji": "Zandaka wo kakunin shitai desu.",
+        "translation": "我想查询余额。"
+      }
+    },
+    "hospital": {
+      "reservation": {
+        "ja": "予約をしたいです。",
+        "romaji": "Yoyaku wo shitai desu.",
+        "translation": "我想预约。"
+      },
+      "symptom": {
+        "ja": "ここが痛いです。",
+        "romaji": "Koko ga itai desu.",
+        "translation": "这里疼。"
+      },
+      "insurance": {
+        "ja": "保険証を持っています。",
+        "romaji": "Hokenshou wo motte imasu.",
+        "translation": "我有保险证。"
+      }
+    },
+    "postOffice": {
+      "sendPackage": {
+        "ja": "荷物を送りたいです。",
+        "romaji": "Nimotsu wo okuritai desu.",
+        "translation": "我想寄包裹。"
+      },
+      "internationalMail": {
+        "ja": "海外に送りたいです。",
+        "romaji": "Kaigai ni okuritai desu.",
+        "translation": "我想寄到国外。"
+      }
+    },
+    "dailyLife": {
+      "dontUnderstand": {
+        "ja": "日本語がわかりません。",
+        "romaji": "Nihongo ga wakarimasen.",
+        "translation": "我不懂日语。"
+      },
+      "speakSlowly": {
+        "ja": "ゆっくり話してください。",
+        "romaji": "Yukkuri hanashite kudasai.",
+        "translation": "请说慢一点。"
+      },
+      "writeDown": {
+        "ja": "書いてもらえますか？",
+        "romaji": "Kaite moraemasu ka?",
+        "translation": "能写下来吗？"
+      },
+      "thankyou": {
+        "ja": "ありがとうございます。",
+        "romaji": "Arigatou gozaimasu.",
+        "translation": "谢谢。"
+      }
+    }
+  },
+  "copy": "复制",
+  "copied": "已复制"
+}

@@ -1,0 +1,130 @@
+{
+  "title": "Frasi utili",
+  "subtitle": "Frasi da usare agli sportelli",
+  "categories": {
+    "cityHall": {
+      "name": "Municipio",
+      "icon": "building"
+    },
+    "bank": {
+      "name": "Banca",
+      "icon": "bank"
+    },
+    "hospital": {
+      "name": "Ospedale",
+      "icon": "hospital"
+    },
+    "postOffice": {
+      "name": "Ufficio postale",
+      "icon": "mail"
+    },
+    "dailyLife": {
+      "name": "Vita quotidiana",
+      "icon": "home"
+    }
+  },
+  "phrases": {
+    "cityHall": {
+      "greeting": {
+        "ja": "すみません、外国人の手続きをしたいのですが。",
+        "romaji": "Sumimasen, gaikokujin no tetsuzuki wo shitai no desu ga.",
+        "translation": "Mi scusi, vorrei fare le procedure per residenti stranieri."
+      },
+      "residenceRegistration": {
+        "ja": "住民登録をしたいです。",
+        "romaji": "Juumin touroku wo shitai desu.",
+        "translation": "Vorrei registrarmi come residente."
+      },
+      "addressChange": {
+        "ja": "住所変更の届出をしたいです。",
+        "romaji": "Juusho henkou no todoke wo shitai desu.",
+        "translation": "Vorrei notificare il cambio di indirizzo."
+      },
+      "myNumber": {
+        "ja": "マイナンバーカードを申請したいです。",
+        "romaji": "Mainanbaa kaado wo shinsei shitai desu.",
+        "translation": "Vorrei richiedere la carta My Number."
+      },
+      "healthInsurance": {
+        "ja": "国民健康保険に加入したいです。",
+        "romaji": "Kokumin kenkou hoken ni kanyuu shitai desu.",
+        "translation": "Vorrei iscrivermi all'assicurazione sanitaria nazionale."
+      },
+      "interpreter": {
+        "ja": "通訳はいますか？",
+        "romaji": "Tsuuyaku wa imasu ka?",
+        "translation": "C'è un interprete disponibile?"
+      }
+    },
+    "bank": {
+      "openAccount": {
+        "ja": "口座を開設したいです。",
+        "romaji": "Kouza wo kaisetsu shitai desu.",
+        "translation": "Vorrei aprire un conto."
+      },
+      "transfer": {
+        "ja": "送金したいです。",
+        "romaji": "Soukin shitai desu.",
+        "translation": "Vorrei fare un bonifico."
+      },
+      "balance": {
+        "ja": "残高を確認したいです。",
+        "romaji": "Zandaka wo kakunin shitai desu.",
+        "translation": "Vorrei controllare il saldo."
+      }
+    },
+    "hospital": {
+      "reservation": {
+        "ja": "予約をしたいです。",
+        "romaji": "Yoyaku wo shitai desu.",
+        "translation": "Vorrei prenotare un appuntamento."
+      },
+      "symptom": {
+        "ja": "ここが痛いです。",
+        "romaji": "Koko ga itai desu.",
+        "translation": "Mi fa male qui."
+      },
+      "insurance": {
+        "ja": "保険証を持っています。",
+        "romaji": "Hokenshou wo motte imasu.",
+        "translation": "Ho la tessera sanitaria."
+      }
+    },
+    "postOffice": {
+      "sendPackage": {
+        "ja": "荷物を送りたいです。",
+        "romaji": "Nimotsu wo okuritai desu.",
+        "translation": "Vorrei spedire un pacco."
+      },
+      "internationalMail": {
+        "ja": "海外に送りたいです。",
+        "romaji": "Kaigai ni okuritai desu.",
+        "translation": "Vorrei spedirlo all'estero."
+      }
+    },
+    "dailyLife": {
+      "dontUnderstand": {
+        "ja": "日本語がわかりません。",
+        "romaji": "Nihongo ga wakarimasen.",
+        "translation": "Non capisco il giapponese."
+      },
+      "speakSlowly": {
+        "ja": "ゆっくり話してください。",
+        "romaji": "Yukkuri hanashite kudasai.",
+        "translation": "Parli lentamente, per favore."
+      },
+      "writeDown": {
+        "ja": "書いてもらえますか？",
+        "romaji": "Kaite moraemasu ka?",
+        "translation": "Potrebbe scriverlo?"
+      },
+      "thankyou": {
+        "ja": "ありがとうございます。",
+        "romaji": "Arigatou gozaimasu.",
+        "translation": "Grazie."
+      }
+    }
+  },
+  "copy": "Copia",
+  "copied": "Copiato"
+}

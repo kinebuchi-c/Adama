@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "�的并新居民支援",
+    "subtitle": "外国居民行政指南"
+  },
+  "nav": {
+    "home": "首页",
+    "tasks": "待办事项",
+    "documents": "文件",
+    "offices": "办事处",
+    "life": "生活支援",
+    "phrases": "常用语",
+    "info": "信息",
+    "help": "帮助"
+  },
+  "actions": {
+    "next": "下一步",
+    "back": "返回",
+    "complete": "完成",
+    "skip": "跳过",
+    "save": "保存",
+    "cancel": "取消",
+    "edit": "编辑",
+    "delete": "删除",
+    "search": "搜索",
+    "close": "关闭",
+    "confirm": "确认",
+    "start": "开始",
+    "viewAll": "查看全部",
+    "learnMore": "了解更多"
+  },
+  "status": {
+    "notStarted": "未开始",
+    "inProgress": "进行中",
+    "waiting": "等待中",
+    "completed": "已完成",
+    "skipped": "已跳过"
+  },
+  "priority": {
+    "high": "高",
+    "medium": "中",
+    "low": "低"
+  },
+  "language": {
+    "select": "选择语言",
+    "current": "当前语言"
+  },
+  "welcome": {
+    "greeting": "欢迎",
+    "message": "我们将帮助您在杉并区安顿下来"
+  },
+  "errors": {
+    "general": "发生错误",
+    "networkError": "网络错误",
+    "notFound": "未找到"
+  },
+  "consultation": {
+    "title": "咨询服务",
+    "description": "如果您需要未列出的语言，请联系我们的多语言咨询服务",
+    "link": "查看咨询服务"
+  }
+}

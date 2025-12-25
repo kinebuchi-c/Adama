@@ -1,0 +1,77 @@
+{
+  "title": "しょるい",
+  "subtitle": "ひつような　しょるいを　たしかめましょう",
+  "stats": {
+    "obtained": "もらった",
+    "total": "ぜんぶ"
+  },
+  "status": {
+    "not_obtained": "まだ　もらっていない",
+    "in_process": "てつづき　している",
+    "obtained": "もらった",
+    "expired": "きげんが　きれた"
+  },
+  "types": {
+    "residence_card": {
+      "name": "ざいりゅうカード",
+      "description": "がいこくじんの　みぶんしょうめいしょ"
+    },
+    "passport": {
+      "name": "パスポート",
+      "description": "あなたの　くにの　パスポート"
+    },
+    "my_number": {
+      "name": "マイナンバーカード",
+      "description": "ばんごうの　カード"
+    },
+    "health_insurance": {
+      "name": "ほけんしょう",
+      "description": "びょういんで　みせる　カード"
+    },
+    "pension_book": {
+      "name": "ねんきん　てちょう",
+      "description": "ねんきんの　きろく"
+    },
+    "bank_card": {
+      "name": "ぎんこうの　カード",
+      "description": "こうざを　つくったら　もらう"
+    },
+    "employment_contract": {
+      "name": "こようけいやくしょ",
+      "description": "しごとの　けいやくしょ"
+    },
+    "certificate_eligibility": {
+      "name": "ざいりゅうしかく　しょうめいしょ",
+      "description": "ビザの　しょうめいしょ"
+    },
+    "juminhyo": {
+      "name": "じゅうみんひょう",
+      "description": "じゅうしょを　しょうめいする　かみ"
+    },
+    "seal_registration": {
+      "name": "いんかん　とうろく　しょうめいしょ",
+      "description": "はんこの　しょうめいしょ"
+    },
+    "other": {
+      "name": "その　ほか",
+      "description": "ほかの　しょるい"
+    }
+  },
+  "photo": {
+    "add": "しゃしんを　とる",
+    "capture": "さつえい",
+    "upload": "アップロード",
+    "front": "おもて",
+    "back": "うら",
+    "delete": "しゃしんを　けす"
+  },
+  "expiration": {
+    "label": "きげん",
+    "expired": "きげんが　きれた",
+    "expiringSoon": "もうすぐ　きげん"
+  },
+  "empty": {
+    "title": "しょるいが　ありません",
+    "message": "さいしょの　せっていを　おわらせると、しょるいが　でます"
+  }
+}

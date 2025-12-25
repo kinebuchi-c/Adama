@@ -1,0 +1,77 @@
+{
+  "title": "Gestione documenti",
+  "subtitle": "Controlla e salva i documenti richiesti",
+  "stats": {
+    "obtained": "Ottenuti",
+    "total": "Totale"
+  },
+  "status": {
+    "not_obtained": "Non ottenuto",
+    "in_process": "In corso",
+    "obtained": "Ottenuto",
+    "expired": "Scaduto"
+  },
+  "types": {
+    "residence_card": {
+      "name": "Carta di soggiorno",
+      "description": "Documento d'identità per residenti stranieri"
+    },
+    "passport": {
+      "name": "Passaporto",
+      "description": "Il tuo passaporto nazionale"
+    },
+    "my_number": {
+      "name": "Carta My Number",
+      "description": "Carta con numero individuale"
+    },
+    "health_insurance": {
+      "name": "Tessera sanitaria",
+      "description": "Richiesta presso le strutture mediche"
+    },
+    "pension_book": {
+      "name": "Libretto pensione",
+      "description": "Registro iscrizione pensione"
+    },
+    "bank_card": {
+      "name": "Carta bancaria",
+      "description": "Rilasciata dopo l'apertura del conto"
+    },
+    "employment_contract": {
+      "name": "Contratto di lavoro",
+      "description": "Contratto con il datore di lavoro"
+    },
+    "certificate_eligibility": {
+      "name": "Certificato di idoneità",
+      "description": "Certificato per richiesta visto"
+    },
+    "juminhyo": {
+      "name": "Certificato di residenza",
+      "description": "Documento che prova l'indirizzo"
+    },
+    "seal_registration": {
+      "name": "Certificato registrazione sigillo",
+      "description": "Certificato sigillo ufficiale"
+    },
+    "other": {
+      "name": "Altro",
+      "description": "Altri documenti"
+    }
+  },
+  "photo": {
+    "add": "Aggiungi foto",
+    "capture": "Scatta foto",
+    "upload": "Carica",
+    "front": "Fronte",
+    "back": "Retro",
+    "delete": "Elimina foto"
+  },
+  "expiration": {
+    "label": "Data di scadenza",
+    "expired": "Scaduto",
+    "expiringSoon": "In scadenza"
+  },
+  "empty": {
+    "title": "Nessun documento",
+    "message": "Completa la configurazione per vedere i documenti richiesti"
+  }
+}

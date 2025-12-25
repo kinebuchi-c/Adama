@@ -1,0 +1,47 @@
+{
+  "title": "办事处指南",
+  "subtitle": "杉并区办事处信息",
+  "search": "搜索办事处",
+  "list": {
+    "suginamiCityHall": {
+      "name": "杉并区役所",
+      "address": "〒166-8570 东京都杉并区阿佐�的南1-15-1",
+      "hours": "周一至周五 8:30-17:00",
+      "phone": "03-3312-2111",
+      "description": "居民登记、国民健康保险、年金手续"
+    },
+    "suginamiTaxOffice": {
+      "name": "杉并税务署",
+      "address": "〒167-8506 东京都杉并区�的�的5-15-13",
+      "hours": "周一至周五 8:30-17:00",
+      "phone": "03-3392-1111",
+      "description": "纳税申报和税务手续"
+    },
+    "immigrationBureau": {
+      "name": "东京出入国在留管理局",
+      "address": "〒108-8255 东京都港区港南5-5-30",
+      "hours": "周一至周五 9:00-16:00",
+      "phone": "0570-013904",
+      "description": "居留资格更新和变更"
+    },
+    "suginamiInternational": {
+      "name": "杉并区交流协会",
+      "address": "〒166-0004 东京都杉并区阿佐谷南3-2-19",
+      "hours": "周一至周六 9:00-21:00",
+      "phone": "03-5378-8833",
+      "description": "外国人咨询、日语课程"
+    }
+  },
+  "floor": {
+    "title": "楼层指南",
+    "counter": "窗口"
+  },
+  "directions": {
+    "title": "交通",
+    "byTrain": "乘电车",
+    "byBus": "乘巴士",
+    "onFoot": "步行"
+  },
+  "call": "拨打电话",
+  "map": "查看地图"
+}

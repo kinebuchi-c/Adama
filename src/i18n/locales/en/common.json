@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "Suginami New Resident Support",
+    "subtitle": "Administrative Guide for Foreign Residents"
+  },
+  "nav": {
+    "home": "Home",
+    "tasks": "Tasks",
+    "documents": "Documents",
+    "offices": "Offices",
+    "life": "Life Support",
+    "phrases": "Phrases",
+    "info": "Information",
+    "help": "Help"
+  },
+  "actions": {
+    "next": "Next",
+    "back": "Back",
+    "complete": "Complete",
+    "skip": "Skip",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "close": "Close",
+    "confirm": "Confirm",
+    "start": "Get Started",
+    "viewAll": "View All",
+    "learnMore": "Learn More"
+  },
+  "status": {
+    "notStarted": "Not Started",
+    "inProgress": "In Progress",
+    "waiting": "Waiting",
+    "completed": "Completed",
+    "skipped": "Skipped"
+  },
+  "priority": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Current Language"
+  },
+  "welcome": {
+    "greeting": "Welcome",
+    "message": "We'll help you settle into life in Suginami"
+  },
+  "errors": {
+    "general": "An error occurred",
+    "networkError": "Network error",
+    "notFound": "Not found"
+  },
+  "consultation": {
+    "title": "Consultation Services",
+    "description": "If you need a language not listed, please contact our multilingual consultation service",
+    "link": "View Consultation Services"
+  }
+}

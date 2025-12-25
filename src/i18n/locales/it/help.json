@@ -1,0 +1,78 @@
+{
+  "title": "Aiuto e contatti di emergenza",
+  "subtitle": "Quando hai bisogno di assistenza",
+  "emergency": {
+    "title": "Contatti di emergenza",
+    "police": {
+      "name": "Polizia",
+      "number": "110",
+      "description": "Segnalare crimini e incidenti"
+    },
+    "fire": {
+      "name": "Pompieri/Ambulanza",
+      "number": "119",
+      "description": "Emergenze incendio e ambulanza"
+    },
+    "coast": {
+      "name": "Guardia costiera",
+      "number": "118",
+      "description": "Emergenze marittime"
+    }
+  },
+  "consultation": {
+    "title": "Servizi di consulenza",
+    "fresc": {
+      "name": "Centro supporto residenti stranieri (FRESC)",
+      "number": "0570-011000",
+      "hours": "Lun-Ven 9:00-17:00",
+      "description": "Immigrazione, lavoro, consulenza legale"
+    },
+    "tokyoMultilingual": {
+      "name": "Consulenza multilingue Tokyo",
+      "number": "03-6258-1227",
+      "hours": "Lun-Ven 10:00-16:00",
+      "description": "Consulenza telefonica in 14 lingue"
+    },
+    "suginamiInternational": {
+      "name": "Associazione scambi internazionali Suginami",
+      "number": "03-5378-8833",
+      "hours": "Lun-Sab 9:00-21:00",
+      "description": "Consulenza per residenti stranieri, supporto alla vita"
+    }
+  },
+  "crisis": {
+    "title": "Supporto in caso di crisi",
+    "mentalHealth": {
+      "name": "Linea salute mentale",
+      "number": "0570-064-556",
+      "description": "Consulenza salute mentale"
+    },
+    "domesticViolence": {
+      "name": "Linea violenza domestica",
+      "number": "#8008",
+      "description": "Consulenza violenza domestica"
+    },
+    "childAbuse": {
+      "name": "Linea abuso minori",
+      "number": "189",
+      "description": "Segnalare abuso sui minori"
+    },
+    "laborConsultation": {
+      "name": "Consulenza lavoratori stranieri",
+      "number": "0570-001701",
+      "description": "Consulenza problemi lavorativi"
+    }
+  },
+  "disaster": {
+    "title": "Informazioni disastri",
+    "earthquakeInfo": "Informazioni terremoti",
+    "typhoonInfo": "Informazioni tifoni",
+    "evacuationShelter": "Rifugi di evacuazione",
+    "disasterVoiceDial": {
+      "name": "Segreteria telefonica disastri",
+      "number": "171",
+      "description": "Conferma sicurezza durante i disastri"
+    }
+  },
+  "call": "Chiama"
+}

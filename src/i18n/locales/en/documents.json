@@ -1,0 +1,77 @@
+{
+  "title": "Document Management",
+  "subtitle": "Check and save your required documents",
+  "stats": {
+    "obtained": "Obtained",
+    "total": "Total"
+  },
+  "status": {
+    "not_obtained": "Not Obtained",
+    "in_process": "In Process",
+    "obtained": "Obtained",
+    "expired": "Expired"
+  },
+  "types": {
+    "residence_card": {
+      "name": "Residence Card",
+      "description": "ID card for foreign residents"
+    },
+    "passport": {
+      "name": "Passport",
+      "description": "Your home country passport"
+    },
+    "my_number": {
+      "name": "My Number Card",
+      "description": "Individual Number Card"
+    },
+    "health_insurance": {
+      "name": "Health Insurance Card",
+      "description": "Required at medical facilities"
+    },
+    "pension_book": {
+      "name": "Pension Book",
+      "description": "Pension enrollment record"
+    },
+    "bank_card": {
+      "name": "Bank Card",
+      "description": "Issued after account opening"
+    },
+    "employment_contract": {
+      "name": "Employment Contract",
+      "description": "Contract with employer"
+    },
+    "certificate_eligibility": {
+      "name": "Certificate of Eligibility",
+      "description": "Certificate for visa application"
+    },
+    "juminhyo": {
+      "name": "Residence Certificate",
+      "description": "Document proving address"
+    },
+    "seal_registration": {
+      "name": "Seal Registration Certificate",
+      "description": "Official seal certificate"
+    },
+    "other": {
+      "name": "Other",
+      "description": "Other documents"
+    }
+  },
+  "photo": {
+    "add": "Add Photo",
+    "capture": "Take Photo",
+    "upload": "Upload",
+    "front": "Front",
+    "back": "Back",
+    "delete": "Delete Photo"
+  },
+  "expiration": {
+    "label": "Expiration Date",
+    "expired": "Expired",
+    "expiringSoon": "Expiring Soon"
+  },
+  "empty": {
+    "title": "No Documents",
+    "message": "Complete onboarding to see required documents"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "title": "Task List",
+  "subtitle": "Check what you need to do now",
+  "filter": {
+    "all": "All",
+    "priority": "Priority",
+    "category": "Category"
+  },
+  "timeline": {
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "later": "Later"
+  },
+  "categories": {
+    "residence": "Residence Procedures",
+    "municipal": "City Hall Procedures",
+    "insurance": "Insurance & Pension",
+    "daily_life": "Daily Life",
+    "work": "Employment",
+    "education": "Education"
+  },
+  "templates": {
+    "residence_card": {
+      "title": "Residence Card Notification",
+      "description": "Must notify within 14 days of address change"
+    },
+    "residence_registration": {
+      "title": "Resident Registration",
+      "description": "Register at Suginami City Hall"
+    },
+    "my_number": {
+      "title": "My Number Notification",
+      "description": "You'll receive your My Number after resident registration"
+    },
+    "health_insurance": {
+      "title": "Enroll in Health Insurance",
+      "description": "Join National Health Insurance or employer's insurance"
+    },
+    "pension": {
+      "title": "Enroll in Pension",
+      "description": "You must join National Pension or Employees' Pension"
+    },
+    "bank_account": {
+      "title": "Open Bank Account",
+      "description": "Needed for salary and utility payments"
+    },
+    "garbage_rules": {
+      "title": "Learn Garbage Rules",
+      "description": "Check Suginami's garbage separation rules"
+    },
+    "emergency_contact": {
+      "title": "Learn Emergency Numbers",
+      "description": "Remember 110 (Police), 119 (Fire/Ambulance)"
+    }
+  },
+  "empty": {
+    "title": "No Tasks",
+    "message": "All tasks have been completed"
+  },
+  "detail": {
+    "linkedDocuments": "Related Documents",
+    "externalLinks": "Reference Links",
+    "notes": "Notes",
+    "addNote": "Add Note"
+  }
+}

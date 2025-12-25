@@ -1,0 +1,77 @@
+{
+  "title": "書類管理",
+  "subtitle": "必要な書類を確認・保存しましょう",
+  "stats": {
+    "obtained": "取得済み",
+    "total": "全体"
+  },
+  "status": {
+    "not_obtained": "未取得",
+    "in_process": "手続き中",
+    "obtained": "取得済み",
+    "expired": "期限切れ"
+  },
+  "types": {
+    "residence_card": {
+      "name": "在留カード",
+      "description": "外国人登録証明書に代わる身分証明書"
+    },
+    "passport": {
+      "name": "パスポート",
+      "description": "母国のパスポート"
+    },
+    "my_number": {
+      "name": "マイナンバーカード",
+      "description": "個人番号カード"
+    },
+    "health_insurance": {
+      "name": "健康保険証",
+      "description": "医療機関で提示が必要"
+    },
+    "pension_book": {
+      "name": "年金手帳",
+      "description": "年金加入記録"
+    },
+    "bank_card": {
+      "name": "銀行のキャッシュカード",
+      "description": "口座開設後に発行"
+    },
+    "employment_contract": {
+      "name": "雇用契約書",
+      "description": "勤務先との契約書類"
+    },
+    "certificate_eligibility": {
+      "name": "在留資格認定証明書",
+      "description": "ビザ申請時の証明書"
+    },
+    "juminhyo": {
+      "name": "住民票",
+      "description": "住所を証明する書類"
+    },
+    "seal_registration": {
+      "name": "印鑑登録証明書",
+      "description": "実印の証明書"
+    },
+    "other": {
+      "name": "その他",
+      "description": "その他の書類"
+    }
+  },
+  "photo": {
+    "add": "写真を追加",
+    "capture": "撮影する",
+    "upload": "アップロード",
+    "front": "表面",
+    "back": "裏面",
+    "delete": "写真を削除"
+  },
+  "expiration": {
+    "label": "有効期限",
+    "expired": "期限切れ",
+    "expiringSoon": "まもなく期限切れ"
+  },
+  "empty": {
+    "title": "書類がありません",
+    "message": "オンボーディングを完了すると必要な書類が表示されます"
+  }
+}

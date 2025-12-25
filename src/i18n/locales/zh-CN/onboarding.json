@@ -1,0 +1,70 @@
+{
+  "title": "开始使用",
+  "subtitle": "请回答几个问题，以便我们提供个性化信息",
+  "progress": "{{current}} / {{total}}",
+  "step1": {
+    "title": "居留资格",
+    "question": "您的居留资格是什么？",
+    "options": {
+      "permanent_resident": "永住者",
+      "spouse_japanese": "日本人配偶",
+      "spouse_permanent": "永住者配偶",
+      "long_term_resident": "定住者",
+      "student": "留学",
+      "work_engineer": "技术/人文知识/国际业务",
+      "work_skilled": "技能",
+      "work_specified": "特定技能",
+      "work_other": "其他工作签证",
+      "dependent": "家族滞在",
+      "designated_activities": "特定活动",
+      "other": "其他"
+    }
+  },
+  "step2": {
+    "title": "停留期限",
+    "questionDuration": "您计划在日本待多久？",
+    "questionArrival": "您什么时候来日本的？",
+    "options": {
+      "under_3months": "不到3个月",
+      "3months_to_1year": "3个月至1年",
+      "1year_to_3years": "1至3年",
+      "3years_to_5years": "3至5年",
+      "over_5years": "5年以上",
+      "permanent": "永久"
+    }
+  },
+  "step3": {
+    "title": "当前状态",
+    "question": "选择您已完成的手续",
+    "items": {
+      "residenceCard": "在留卡地址变更通知",
+      "myNumber": "已获得个人编号卡",
+      "healthInsurance": "已加入健康保险",
+      "pension": "已加入年金",
+      "bankAccount": "已开立银行账户"
+    }
+  },
+  "step4": {
+    "title": "需要帮助的领域",
+    "question": "您需要哪些方面的帮助？（可多选）",
+    "options": {
+      "housing": "住房",
+      "medical": "医疗",
+      "education": "教育",
+      "childcare": "育儿",
+      "employment": "就业",
+      "japanese_language": "日语学习",
+      "daily_life": "日常生活",
+      "legal_administrative": "法律/行政"
+    }
+  },
+  "step5": {
+    "title": "语言设置",
+    "question": "选择此应用程序的首选语言"
+  },
+  "complete": {
+    "title": "设置完成！",
+    "message": "我们将为您显示个性化信息",
+    "startButton": "开始"
+  }
+}

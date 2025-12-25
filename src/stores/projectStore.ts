@@ -127,13 +127,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
     if (countryProjects.length === 0) return null
 
-    // ステータスの優先度: completed < not_started < planning < review < in_progress
+    // ステータスの優先度: completed < not_started < preparing < in_progress
     const statusPriority: Record<ProjectStatus, number> = {
       completed: 1,
       not_started: 2,
-      planning: 3,
-      review: 4,
-      in_progress: 5,
+      preparing: 3,
+      in_progress: 4,
     }
 
     // 最も優先度の高いステータスを返す

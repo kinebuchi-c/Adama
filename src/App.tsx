@@ -1,22 +1,44 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Header } from './components/Layout'
-import { Home, CountryDetail } from './pages'
+import { Home, CountryDetail, SchedulePage } from './pages'
+import { SuginamiLayout } from './features/suginami/components/SuginamiLayout'
+import {
+  TopPage,
+  OnboardingPage,
+  TaskListPage,
+  DocumentsPage,
+  OfficeNavPage,
+  LifeSupportPage,
+  PhrasesPage,
+  InfoHubPage,
+  HelpPage,
+} from './features/suginami/pages'
+import { TerritoryPage } from './features/territory'
 
 function App() {
   return (
     <BrowserRouter>
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(to bottom right, #f8fafc, #f1f5f9)',
-      }}>
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/country/:countryCode" element={<CountryDetail />} />
-          </Routes>
-        </main>
-      </div>
+      <Routes>
+        {/* World Territory Vision Route */}
+        <Route path="/territory" element={<TerritoryPage />} />
+
+        {/* Suginami New Resident Support Routes */}
+        <Route path="/suginami" element={<SuginamiLayout />}>
+          <Route index element={<TopPage />} />
+          <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="tasks" element={<TaskListPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="offices" element={<OfficeNavPage />} />
+          <Route path="life" element={<LifeSupportPage />} />
+          <Route path="phrases" element={<PhrasesPage />} />
+          <Route path="info" element={<InfoHubPage />} />
+          <Route path="help" element={<HelpPage />} />
+        </Route>
+
+        {/* Original Baobab World Map Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/country/:countryCode" element={<CountryDetail />} />
+        <Route path="/schedule" element={<SchedulePage />} />
+      </Routes>
     </BrowserRouter>
   )
 }

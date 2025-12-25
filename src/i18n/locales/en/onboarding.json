@@ -1,0 +1,70 @@
+{
+  "title": "Let's Get Started",
+  "subtitle": "Please answer a few questions so we can provide personalized information",
+  "progress": "{{current}} / {{total}}",
+  "step1": {
+    "title": "Residence Status",
+    "question": "What is your residence status?",
+    "options": {
+      "permanent_resident": "Permanent Resident",
+      "spouse_japanese": "Spouse of Japanese National",
+      "spouse_permanent": "Spouse of Permanent Resident",
+      "long_term_resident": "Long-term Resident",
+      "student": "Student",
+      "work_engineer": "Engineer/Specialist in Humanities/International Services",
+      "work_skilled": "Skilled Labor",
+      "work_specified": "Specified Skilled Worker",
+      "work_other": "Other Work Visa",
+      "dependent": "Dependent",
+      "designated_activities": "Designated Activities",
+      "other": "Other"
+    }
+  },
+  "step2": {
+    "title": "Duration of Stay",
+    "questionDuration": "How long do you plan to stay in Japan?",
+    "questionArrival": "When did you arrive in Japan?",
+    "options": {
+      "under_3months": "Less than 3 months",
+      "3months_to_1year": "3 months to 1 year",
+      "1year_to_3years": "1 to 3 years",
+      "3years_to_5years": "3 to 5 years",
+      "over_5years": "More than 5 years",
+      "permanent": "Permanent"
+    }
+  },
+  "step3": {
+    "title": "Current Status",
+    "question": "Select the procedures you have already completed",
+    "items": {
+      "residenceCard": "Residence Card address change notification",
+      "myNumber": "My Number Card obtained",
+      "healthInsurance": "Enrolled in health insurance",
+      "pension": "Enrolled in pension",
+      "bankAccount": "Bank account opened"
+    }
+  },
+  "step4": {
+    "title": "Areas Needing Support",
+    "question": "What areas do you need help with? (Select multiple)",
+    "options": {
+      "housing": "Housing",
+      "medical": "Medical",
+      "education": "Education",
+      "childcare": "Childcare",
+      "employment": "Employment",
+      "japanese_language": "Japanese Language",
+      "daily_life": "Daily Life",
+      "legal_administrative": "Legal/Administrative"
+    }
+  },
+  "step5": {
+    "title": "Language Setting",
+    "question": "Choose your preferred language for this app"
+  },
+  "complete": {
+    "title": "Setup Complete!",
+    "message": "We'll show you personalized information",
+    "startButton": "Get Started"
+  }
+}

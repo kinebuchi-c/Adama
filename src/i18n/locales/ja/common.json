@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "杉並新住民サポート",
+    "subtitle": "在住外国人のための行政手続きガイド"
+  },
+  "nav": {
+    "home": "ホーム",
+    "tasks": "やること",
+    "documents": "書類",
+    "offices": "窓口",
+    "life": "生活",
+    "phrases": "フレーズ",
+    "info": "情報",
+    "help": "ヘルプ"
+  },
+  "actions": {
+    "next": "次へ",
+    "back": "戻る",
+    "complete": "完了",
+    "skip": "スキップ",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "search": "検索",
+    "close": "閉じる",
+    "confirm": "確認",
+    "start": "はじめる",
+    "viewAll": "すべて見る",
+    "learnMore": "詳しく見る"
+  },
+  "status": {
+    "notStarted": "未着手",
+    "inProgress": "進行中",
+    "waiting": "待機中",
+    "completed": "完了",
+    "skipped": "スキップ済み"
+  },
+  "priority": {
+    "high": "高",
+    "medium": "中",
+    "low": "低"
+  },
+  "language": {
+    "select": "言語を選択",
+    "current": "現在の言語"
+  },
+  "welcome": {
+    "greeting": "ようこそ",
+    "message": "杉並区での新生活をサポートします"
+  },
+  "errors": {
+    "general": "エラーが発生しました",
+    "networkError": "ネットワークエラー",
+    "notFound": "見つかりませんでした"
+  },
+  "consultation": {
+    "title": "相談窓口",
+    "description": "お探しの言語がない場合は、多言語相談窓口をご利用ください",
+    "link": "相談窓口を見る"
+  }
+}

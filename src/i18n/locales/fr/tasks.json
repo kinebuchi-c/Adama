@@ -1,0 +1,66 @@
+{
+  "title": "Liste des tâches",
+  "subtitle": "Vérifiez ce que vous devez faire maintenant",
+  "filter": {
+    "all": "Tout",
+    "priority": "Priorité",
+    "category": "Catégorie"
+  },
+  "timeline": {
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "later": "Plus tard"
+  },
+  "categories": {
+    "residence": "Procédures de résidence",
+    "municipal": "Procédures municipales",
+    "insurance": "Assurance et retraite",
+    "daily_life": "Vie quotidienne",
+    "work": "Emploi",
+    "education": "Éducation"
+  },
+  "templates": {
+    "residence_card": {
+      "title": "Notification carte de séjour",
+      "description": "À notifier dans les 14 jours suivant le changement d'adresse"
+    },
+    "residence_registration": {
+      "title": "Inscription au registre des résidents",
+      "description": "Inscrivez-vous à la mairie de Suginami"
+    },
+    "my_number": {
+      "title": "Notification My Number",
+      "description": "Vous recevrez votre My Number après l'inscription"
+    },
+    "health_insurance": {
+      "title": "Souscrire à l'assurance maladie",
+      "description": "Rejoignez l'assurance maladie nationale ou celle de l'employeur"
+    },
+    "pension": {
+      "title": "Souscrire à la retraite",
+      "description": "Vous devez rejoindre la retraite nationale ou des salariés"
+    },
+    "bank_account": {
+      "title": "Ouvrir un compte bancaire",
+      "description": "Nécessaire pour les salaires et les factures"
+    },
+    "garbage_rules": {
+      "title": "Apprendre les règles des déchets",
+      "description": "Vérifiez les règles de tri de Suginami"
+    },
+    "emergency_contact": {
+      "title": "Apprendre les numéros d'urgence",
+      "description": "Mémorisez 110 (Police), 119 (Pompiers/Ambulance)"
+    }
+  },
+  "empty": {
+    "title": "Aucune tâche",
+    "message": "Toutes les tâches sont terminées"
+  },
+  "detail": {
+    "linkedDocuments": "Documents associés",
+    "externalLinks": "Liens de référence",
+    "notes": "Notes",
+    "addNote": "Ajouter une note"
+  }
+}
