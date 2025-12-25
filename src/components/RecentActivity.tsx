@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { ProjectEvent } from '../types'
+import type { ProjectEvent, ActivityCategory } from '../types'
 import { db } from '../db/database'
-import { COUNTRY_NAMES } from '../types'
+import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS } from '../types'
 
 interface ActivityWithProject extends ProjectEvent {
   projectName: string
@@ -14,7 +14,6 @@ export function RecentActivity() {
   const [scheduledActivities, setScheduledActivities] = useState<ActivityWithProject[]>([])
   const [completedActivities, setCompletedActivities] = useState<ActivityWithProject[]>([])
   const [allActivities, setAllActivities] = useState<ActivityWithProject[]>([])
-  const [totalScheduled, setTotalScheduled] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -45,7 +44,6 @@ export function RecentActivity() {
       const allScheduled = activitiesWithProject
         .filter(a => a.eventType === 'scheduled')
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      setTotalScheduled(allScheduled.length)
       setScheduledActivities(allScheduled.slice(0, 8))
 
       // 完了：日付降順（新しい順）で最新8件
@@ -71,6 +69,10 @@ export function RecentActivity() {
 
   const getCountryName = (code: string) => {
     return COUNTRY_NAMES[code] || code
+  }
+
+  const getActivityCategory = (activity: ActivityWithProject): ActivityCategory => {
+    return activity.activityCategory || EVENT_CATEGORY[activity.title] || 'internal'
   }
 
   const formatDateForCSV = (date: Date) => {
@@ -132,7 +134,7 @@ export function RecentActivity() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* 直近の予定 */}
+      {/* これからの予定 */}
       <div style={{
         background: 'linear-gradient(135deg, #fff7ed, #ffedd5)',
         borderRadius: '20px',
@@ -150,7 +152,7 @@ export function RecentActivity() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>📅</span>
-            <span>直近の予定</span>
+            <span>これからの予定</span>
           </div>
           <button
             onClick={() => navigate('/schedule')}
@@ -183,12 +185,21 @@ export function RecentActivity() {
             {scheduledActivities.map((activity, index) => (
               <div
                 key={activity.id}
+                onClick={() => navigate(`/country/${activity.countryCode}`, { state: { countryName: getCountryName(activity.countryCode) } })}
                 style={{
                   display: 'flex',
                   gap: '10px',
                   padding: '8px 0',
                   borderBottom: index < scheduledActivities.length - 1 ? '1px solid rgba(249, 115, 22, 0.15)' : 'none',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  margin: '0 -4px',
+                  paddingLeft: '4px',
+                  paddingRight: '4px',
+                  transition: 'background-color 0.15s',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(249, 115, 22, 0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div style={{
                   fontSize: '0.7rem',
@@ -200,12 +211,28 @@ export function RecentActivity() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 500,
-                    color: '#1f2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                     marginBottom: '2px',
                   }}>
-                    {activity.title}
+                    <span style={{
+                      fontSize: '0.6rem',
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
+                      color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
+                      fontWeight: 600,
+                    }}>
+                      {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
+                    </span>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      color: '#1f2937',
+                    }}>
+                      {activity.title}
+                    </span>
                   </div>
                   <div style={{
                     fontSize: '0.65rem',
@@ -233,7 +260,7 @@ export function RecentActivity() {
         )}
       </div>
 
-      {/* 直近の活動履歴 */}
+      {/* 完了した活動 */}
       <div style={{
         background: 'white',
         borderRadius: '20px',
@@ -252,7 +279,7 @@ export function RecentActivity() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>✅</span>
-            <span>直近の活動</span>
+            <span>完了した活動</span>
           </div>
           {allActivities.length > 0 && (
             <button
@@ -291,12 +318,21 @@ export function RecentActivity() {
             {completedActivities.map((activity, index) => (
               <div
                 key={activity.id}
+                onClick={() => navigate(`/country/${activity.countryCode}`, { state: { countryName: getCountryName(activity.countryCode) } })}
                 style={{
                   display: 'flex',
                   gap: '10px',
                   padding: '8px 0',
                   borderBottom: index < completedActivities.length - 1 ? '1px solid #f3f4f6' : 'none',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  margin: '0 -4px',
+                  paddingLeft: '4px',
+                  paddingRight: '4px',
+                  transition: 'background-color 0.15s',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div style={{
                   fontSize: '0.7rem',
@@ -308,12 +344,28 @@ export function RecentActivity() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 500,
-                    color: '#1f2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                     marginBottom: '2px',
                   }}>
-                    {activity.title}
+                    <span style={{
+                      fontSize: '0.6rem',
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
+                      color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
+                      fontWeight: 600,
+                    }}>
+                      {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
+                    </span>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      color: '#1f2937',
+                    }}>
+                      {activity.title}
+                    </span>
                   </div>
                   <div style={{
                     fontSize: '0.65rem',

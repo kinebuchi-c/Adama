@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Project, BaobabGrowth, ProjectEvent } from '../types'
+import type { Project, BaobabGrowth, ProjectEvent, CountryContact } from '../types'
 import type {
   SuginamiUserProfile,
   SuginamiTask,
@@ -11,6 +11,7 @@ export class BaobabDatabase extends Dexie {
   projects!: Table<Project>
   projectEvents!: Table<ProjectEvent>
   baobabGrowth!: Table<BaobabGrowth>
+  countryContacts!: Table<CountryContact>
   suginamiUserProfile!: Table<SuginamiUserProfile>
   suginamiTasks!: Table<SuginamiTask>
   suginamiDocuments!: Table<SuginamiDocument>
@@ -82,6 +83,18 @@ export class BaobabDatabase extends Dexie {
           event.eventType = 'completed'
         }
       })
+    })
+
+    // v6: 国の連絡先情報テーブル追加
+    this.version(6).stores({
+      projects: 'id, countryCode, status, diplomacyPhase, createdAt, updatedAt',
+      projectEvents: 'id, projectId, date, eventType, createdAt',
+      baobabGrowth: 'id',
+      countryContacts: 'id, countryCode, updatedAt',
+      suginamiUserProfile: 'id',
+      suginamiTasks: 'id, templateId, category, status, priority, order',
+      suginamiDocuments: 'id, type, status, linkedTaskId',
+      languagePreference: 'id',
     })
   }
 }

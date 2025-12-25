@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { ProjectEvent } from '../types'
+import type { ProjectEvent, ActivityCategory } from '../types'
 import { db } from '../db/database'
-import { COUNTRY_NAMES } from '../types'
+import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS } from '../types'
 
 interface ActivityWithProject extends ProjectEvent {
   projectName: string
@@ -68,6 +68,10 @@ export function SchedulePage() {
 
   const getCountryName = (code: string) => {
     return COUNTRY_NAMES[code] || code
+  }
+
+  const getActivityCategory = (activity: ActivityWithProject): ActivityCategory => {
+    return activity.activityCategory || EVENT_CATEGORY[activity.title] || 'internal'
   }
 
   // 日付でグループ化
@@ -202,12 +206,28 @@ export function SchedulePage() {
                       }}>
                         <div style={{ flex: 1 }}>
                           <div style={{
-                            fontSize: '1rem',
-                            fontWeight: 600,
-                            color: '#1f2937',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                             marginBottom: '6px',
                           }}>
-                            {activity.title}
+                            <span style={{
+                              fontSize: '0.75rem',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
+                              color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
+                              fontWeight: 600,
+                            }}>
+                              {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
+                            </span>
+                            <span style={{
+                              fontSize: '1rem',
+                              fontWeight: 600,
+                              color: '#1f2937',
+                            }}>
+                              {activity.title}
+                            </span>
                           </div>
                           <div style={{
                             fontSize: '0.85rem',

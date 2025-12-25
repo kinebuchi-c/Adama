@@ -11,6 +11,9 @@ export type ProjectStatus =
 // イベント種別
 export type EventType = 'completed' | 'scheduled'
 
+// 活動カテゴリ（訪問 or 内部準備）
+export type ActivityCategory = 'external' | 'internal'
+
 // プロジェクトイベント（ヒストリー）
 export interface ProjectEvent {
   id: string
@@ -21,6 +24,7 @@ export interface ProjectEvent {
   imageUrl?: string        // 写真（base64 data URL）
   eventType: EventType     // 完了済み or 予定
   participants?: string    // 参加者・訪問者（カンマ区切り）
+  activityCategory?: ActivityCategory  // 訪問 or 内部準備
   createdAt: Date
 }
 
@@ -54,6 +58,57 @@ export const EVENT_AUTO_UPDATE: Record<string, EventAutoUpdate> = {
   '現地視察': { diplomacyPhase: 3 },
   'MOU締結': { diplomacyPhase: 4, status: 'completed' },
   '契約締結': { status: 'completed' },
+}
+
+// イベント→活動カテゴリマッピング
+export const EVENT_CATEGORY: Record<string, ActivityCategory> = {
+  '大使館訪問': 'external',
+  '政府関係者との面談': 'external',
+  '現地視察': 'external',
+  'MOU締結': 'external',
+  '契約締結': 'external',
+  'オンライン会議': 'external',
+  '初回コンタクト': 'internal',
+  '資料送付': 'internal',
+  '提案書提出': 'internal',
+  'その他': 'internal',
+}
+
+// 活動カテゴリのラベル
+export const ACTIVITY_CATEGORY_LABELS: Record<ActivityCategory, string> = {
+  external: '訪問',
+  internal: '内部',
+}
+
+// 活動カテゴリの色
+export const ACTIVITY_CATEGORY_COLORS: Record<ActivityCategory, string> = {
+  external: '#059669',  // green
+  internal: '#6366f1',  // indigo
+}
+
+// 連絡先の人物情報
+export interface ContactPerson {
+  name: string
+  notes?: string               // 備考
+  startDate?: string           // 就任日
+  endDate?: string             // 退任日（空なら現任）
+}
+
+// 国の連絡先情報
+export interface CountryContact {
+  id: string
+  countryCode: string
+  president?: ContactPerson              // 現任大統領/首相
+  presidentHistory?: ContactPerson[]     // 過去の大統領/首相
+  japanAmbassador?: ContactPerson        // 現任在日大使
+  japanAmbassadorHistory?: ContactPerson[] // 過去の在日大使
+  additionalContacts: Array<{            // その他連絡先
+    role: string                         // 役職
+    name: string                         // 名前
+    notes?: string                       // 備考
+    history?: ContactPerson[]            // 過去の担当者
+  }>
+  updatedAt: Date
 }
 
 // プロジェクト
@@ -290,6 +345,8 @@ export const COUNTRY_INFO: Record<string, CountryInfo> = {
   AM: { code: 'AM', name: 'アルメニア', capital: 'エレバン', population: '300万人', language: 'アルメニア語', currency: 'ドラム (AMD)', timezone: '-5時間' },
   // インド洋
   MV: { code: 'MV', name: 'モルディブ', capital: 'マレ', population: '54万人', language: 'ディベヒ語', currency: 'ルフィヤ (MVR)', timezone: '-4時間' },
+  // 大西洋
+  CV: { code: 'CV', name: 'カーボベルデ', capital: 'プライア', population: '56万人', language: 'ポルトガル語', currency: 'エスクード (CVE)', timezone: '-10時間' },
   // 南米追加
   GY: { code: 'GY', name: 'ガイアナ', capital: 'ジョージタウン', population: '79万人', language: '英語', currency: 'ドル (GYD)', timezone: '-13時間' },
   SR: { code: 'SR', name: 'スリナム', capital: 'パラマリボ', population: '59万人', language: 'オランダ語', currency: 'ドル (SRD)', timezone: '-12時間' },
@@ -345,57 +402,7 @@ export const STATUS_LABELS: Record<ProjectStatus, string> = {
   completed: '完了',
 }
 
-// 国名データ (主要国)
-export const COUNTRY_NAMES: Record<string, string> = {
-  JP: '日本',
-  US: 'アメリカ',
-  CN: '中国',
-  GB: 'イギリス',
-  DE: 'ドイツ',
-  FR: 'フランス',
-  IT: 'イタリア',
-  ES: 'スペイン',
-  CA: 'カナダ',
-  AU: 'オーストラリア',
-  KR: '韓国',
-  IN: 'インド',
-  BR: 'ブラジル',
-  MX: 'メキシコ',
-  RU: 'ロシア',
-  ZA: '南アフリカ',
-  EG: 'エジプト',
-  NG: 'ナイジェリア',
-  KE: 'ケニア',
-  TH: 'タイ',
-  VN: 'ベトナム',
-  ID: 'インドネシア',
-  PH: 'フィリピン',
-  SG: 'シンガポール',
-  MY: 'マレーシア',
-  NZ: 'ニュージーランド',
-  AR: 'アルゼンチン',
-  CL: 'チリ',
-  CO: 'コロンビア',
-  PE: 'ペルー',
-  SE: 'スウェーデン',
-  NO: 'ノルウェー',
-  FI: 'フィンランド',
-  DK: 'デンマーク',
-  NL: 'オランダ',
-  BE: 'ベルギー',
-  CH: 'スイス',
-  AT: 'オーストリア',
-  PL: 'ポーランド',
-  CZ: 'チェコ',
-  PT: 'ポルトガル',
-  GR: 'ギリシャ',
-  TR: 'トルコ',
-  SA: 'サウジアラビア',
-  AE: 'アラブ首長国連邦',
-  IL: 'イスラエル',
-  PK: 'パキスタン',
-  BD: 'バングラデシュ',
-  MM: 'ミャンマー',
-  TW: '台湾',
-  HK: '香港',
-}
+// 国名データ (COUNTRY_INFOと同期)
+export const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
+  Object.entries(COUNTRY_INFO).map(([code, info]) => [code, info.name])
+)

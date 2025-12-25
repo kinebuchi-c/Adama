@@ -4,7 +4,7 @@ import { ProjectList } from '../components/Project'
 import { useProjectStore } from '../stores/projectStore'
 import { useBaobabStore } from '../stores/baobabStore'
 import { useTerritoryStore } from '../stores/territoryStore'
-import type { Project, ProjectStatus, DiplomacyPhase, ProjectEvent } from '../types'
+import type { Project, ProjectStatus, DiplomacyPhase, ProjectEvent, CountryContact, ContactPerson } from '../types'
 import { COUNTRY_NAMES, COUNTRY_INFO } from '../types'
 import { getCountryAsTerritory } from '../types/territory'
 import { db } from '../db/database'
@@ -19,6 +19,14 @@ export function CountryDetail() {
 
   const [countryProjects, setCountryProjects] = useState<Project[]>([])
   const [countryActivities, setCountryActivities] = useState<(ProjectEvent & { projectName: string })[]>([])
+  const [contacts, setContacts] = useState<CountryContact | null>(null)
+  const [isEditingContacts, setIsEditingContacts] = useState(false)
+  const [showHistory, setShowHistory] = useState<string | null>(null) // 履歴表示中のキー
+  const [editContacts, setEditContacts] = useState({
+    president: { name: '', notes: '' } as ContactPerson,
+    japanAmbassador: { name: '', notes: '' } as ContactPerson,
+    additionalContacts: [] as Array<{ role: string; name: string; notes?: string }>,
+  })
 
   // 国名の取得
   const countryName = (location.state as { countryName?: string })?.countryName
@@ -70,6 +78,72 @@ export function CountryDetail() {
 
     loadCountryActivities()
   }, [countryCode, projects])
+
+  // 連絡先を読み込み
+  useEffect(() => {
+    const loadContacts = async () => {
+      if (!countryCode) return
+      const existing = await db.countryContacts.where('countryCode').equals(countryCode).first()
+      if (existing) {
+        setContacts(existing)
+        setEditContacts({
+          president: existing.president || { name: '', notes: '' },
+          japanAmbassador: existing.japanAmbassador || { name: '', notes: '' },
+          additionalContacts: existing.additionalContacts || [],
+        })
+      }
+    }
+    loadContacts()
+  }, [countryCode])
+
+  // 連絡先を保存
+  const handleSaveContacts = useCallback(async () => {
+    if (!countryCode) return
+    const now = new Date()
+    const dateStr = now.toISOString().split('T')[0]
+
+    // 大統領の履歴処理
+    let presidentHistory = contacts?.presidentHistory || []
+    if (contacts?.president?.name && contacts.president.name !== editContacts.president.name) {
+      presidentHistory = [...presidentHistory, { ...contacts.president, endDate: dateStr }]
+    }
+
+    // 在日大使の履歴処理
+    let japanAmbassadorHistory = contacts?.japanAmbassadorHistory || []
+    if (contacts?.japanAmbassador?.name && contacts.japanAmbassador.name !== editContacts.japanAmbassador.name) {
+      japanAmbassadorHistory = [...japanAmbassadorHistory, { ...contacts.japanAmbassador, endDate: dateStr }]
+    }
+
+    const contactData: CountryContact = {
+      id: contacts?.id || `contact-${countryCode}`,
+      countryCode,
+      president: editContacts.president.name ? { ...editContacts.president, startDate: editContacts.president.startDate || dateStr } : undefined,
+      presidentHistory: presidentHistory.length > 0 ? presidentHistory : undefined,
+      japanAmbassador: editContacts.japanAmbassador.name ? { ...editContacts.japanAmbassador, startDate: editContacts.japanAmbassador.startDate || dateStr } : undefined,
+      japanAmbassadorHistory: japanAmbassadorHistory.length > 0 ? japanAmbassadorHistory : undefined,
+      additionalContacts: editContacts.additionalContacts.filter(c => c.role && c.name),
+      updatedAt: now,
+    }
+    await db.countryContacts.put(contactData)
+    setContacts(contactData)
+    setIsEditingContacts(false)
+  }, [countryCode, contacts, editContacts])
+
+  // 追加連絡先を追加
+  const handleAddContact = () => {
+    setEditContacts(prev => ({
+      ...prev,
+      additionalContacts: [...prev.additionalContacts, { role: '', name: '' }],
+    }))
+  }
+
+  // 追加連絡先を削除
+  const handleRemoveContact = (index: number) => {
+    setEditContacts(prev => ({
+      ...prev,
+      additionalContacts: prev.additionalContacts.filter((_, i) => i !== index),
+    }))
+  }
 
   const handleAddProject = useCallback(async (data: { name: string; status: ProjectStatus; diplomacyPhase: DiplomacyPhase; assignee: string; notes: string; referrer: string; managementUrl: string }) => {
     if (!countryCode) return
@@ -268,6 +342,482 @@ export function CountryDetail() {
             </div>
           </div>
         )}
+
+        {/* 連絡先情報 */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+          }}>
+            <h2 style={{
+              fontSize: '1.3rem',
+              fontWeight: 700,
+              color: '#1f2937',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <span>📇</span>
+              <span>連絡先</span>
+            </h2>
+            {!isEditingContacts ? (
+              <button
+                onClick={() => setIsEditingContacts(true)}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.85rem',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                編集
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => {
+                    setIsEditingContacts(false)
+                    setEditContacts({
+                      president: contacts?.president || { name: '', notes: '' },
+                      japanAmbassador: contacts?.japanAmbassador || { name: '', notes: '' },
+                      additionalContacts: contacts?.additionalContacts || [],
+                    })
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.85rem',
+                    backgroundColor: '#f3f4f6',
+                    color: '#374151',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleSaveContacts}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.85rem',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  保存
+                </button>
+              </div>
+            )}
+          </div>
+
+          {isEditingContacts ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* 大統領/首相 */}
+              <div style={{ padding: '12px', background: '#fefce8', borderRadius: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', color: '#854d0e', fontWeight: 600 }}>
+                    👑 大統領/首相
+                  </label>
+                  {editContacts.president.name && (
+                    <button
+                      onClick={() => {
+                        const dateStr = new Date().toISOString().split('T')[0]
+                        setEditContacts(prev => ({
+                          ...prev,
+                          president: { name: '', notes: '', startDate: dateStr },
+                        }))
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '0.75rem',
+                        backgroundColor: '#fef3c7',
+                        color: '#92400e',
+                        border: '1px solid #fcd34d',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🔄 情報更新
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={editContacts.president.name}
+                  onChange={(e) => setEditContacts(prev => ({ ...prev, president: { ...prev.president, name: e.target.value } }))}
+                  placeholder="名前を入力"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '0.9rem',
+                    border: '1px solid #fde047',
+                    borderRadius: '8px',
+                    boxSizing: 'border-box',
+                    marginBottom: '8px',
+                  }}
+                />
+                <textarea
+                  value={editContacts.president.notes || ''}
+                  onChange={(e) => setEditContacts(prev => ({ ...prev, president: { ...prev.president, notes: e.target.value } }))}
+                  placeholder="備考（経歴、連絡先など）"
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '0.85rem',
+                    border: '1px solid #fde047',
+                    borderRadius: '8px',
+                    boxSizing: 'border-box',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+              {/* 在日大使 */}
+              <div style={{ padding: '12px', background: '#eff6ff', borderRadius: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', color: '#1e40af', fontWeight: 600 }}>
+                    🏛️ 在日大使
+                  </label>
+                  {editContacts.japanAmbassador.name && (
+                    <button
+                      onClick={() => {
+                        const dateStr = new Date().toISOString().split('T')[0]
+                        setEditContacts(prev => ({
+                          ...prev,
+                          japanAmbassador: { name: '', notes: '', startDate: dateStr },
+                        }))
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '0.75rem',
+                        backgroundColor: '#dbeafe',
+                        color: '#1e40af',
+                        border: '1px solid #93c5fd',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🔄 情報更新
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={editContacts.japanAmbassador.name}
+                  onChange={(e) => setEditContacts(prev => ({ ...prev, japanAmbassador: { ...prev.japanAmbassador, name: e.target.value } }))}
+                  placeholder="名前を入力"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '0.9rem',
+                    border: '1px solid #93c5fd',
+                    borderRadius: '8px',
+                    boxSizing: 'border-box',
+                    marginBottom: '8px',
+                  }}
+                />
+                <textarea
+                  value={editContacts.japanAmbassador.notes || ''}
+                  onChange={(e) => setEditContacts(prev => ({ ...prev, japanAmbassador: { ...prev.japanAmbassador, notes: e.target.value } }))}
+                  placeholder="備考（経歴、連絡先など）"
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    fontSize: '0.85rem',
+                    border: '1px solid #93c5fd',
+                    borderRadius: '8px',
+                    boxSizing: 'border-box',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+              {/* その他連絡先 */}
+              <div>
+                <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '8px' }}>
+                  📋 その他連絡先
+                </label>
+                {editContacts.additionalContacts.map((contact, index) => (
+                  <div key={index} style={{
+                    padding: '12px',
+                    background: '#f9fafb',
+                    borderRadius: '10px',
+                    marginBottom: '10px',
+                  }}>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                      <input
+                        type="text"
+                        value={contact.role}
+                        onChange={(e) => {
+                          const updated = [...editContacts.additionalContacts]
+                          updated[index] = { ...updated[index], role: e.target.value }
+                          setEditContacts(prev => ({ ...prev, additionalContacts: updated }))
+                        }}
+                        placeholder="役職"
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          fontSize: '0.85rem',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={contact.name}
+                        onChange={(e) => {
+                          const updated = [...editContacts.additionalContacts]
+                          updated[index] = { ...updated[index], name: e.target.value }
+                          setEditContacts(prev => ({ ...prev, additionalContacts: updated }))
+                        }}
+                        placeholder="名前"
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          fontSize: '0.85rem',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                        }}
+                      />
+                      <button
+                        onClick={() => handleRemoveContact(index)}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#fef2f2',
+                          color: '#dc2626',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <textarea
+                      value={contact.notes || ''}
+                      onChange={(e) => {
+                        const updated = [...editContacts.additionalContacts]
+                        updated[index] = { ...updated[index], notes: e.target.value }
+                        setEditContacts(prev => ({ ...prev, additionalContacts: updated }))
+                      }}
+                      placeholder="備考（経歴、連絡先など）"
+                      rows={2}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        fontSize: '0.85rem',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxSizing: 'border-box',
+                        resize: 'vertical',
+                      }}
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={handleAddContact}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '0.85rem',
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  + 連絡先を追加
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* 大統領/首相 */}
+              <div style={{
+                padding: '12px',
+                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                borderRadius: '10px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span>👑</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.7rem', color: '#92400e' }}>大統領/首相</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#78350f' }}>
+                      {contacts?.president?.name || '未登録'}
+                    </div>
+                  </div>
+                  {contacts?.presidentHistory && contacts.presidentHistory.length > 0 && (
+                    <button
+                      onClick={() => setShowHistory(showHistory === 'president' ? null : 'president')}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '0.7rem',
+                        backgroundColor: showHistory === 'president' ? '#92400e' : 'rgba(146, 64, 14, 0.2)',
+                        color: showHistory === 'president' ? 'white' : '#92400e',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      履歴 ({contacts.presidentHistory.length})
+                    </button>
+                  )}
+                </div>
+                {contacts?.president?.notes && (
+                  <div style={{
+                    marginTop: '8px',
+                    marginLeft: '32px',
+                    fontSize: '0.8rem',
+                    color: '#a16207',
+                    padding: '8px 10px',
+                    background: 'rgba(255,255,255,0.5)',
+                    borderRadius: '6px',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {contacts.president.notes}
+                  </div>
+                )}
+                {showHistory === 'president' && contacts?.presidentHistory && (
+                  <div style={{ marginTop: '12px', marginLeft: '32px' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#92400e', marginBottom: '6px', fontWeight: 600 }}>過去の大統領/首相</div>
+                    {contacts.presidentHistory.map((person, idx) => (
+                      <div key={idx} style={{
+                        padding: '8px 10px',
+                        background: 'rgba(255,255,255,0.5)',
+                        borderRadius: '6px',
+                        marginBottom: '6px',
+                      }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#78350f' }}>{person.name}</div>
+                        {person.notes && (
+                          <div style={{ fontSize: '0.75rem', color: '#a16207', marginTop: '4px', whiteSpace: 'pre-wrap' }}>
+                            {person.notes}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 在日大使 */}
+              <div style={{
+                padding: '12px',
+                background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+                borderRadius: '10px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span>🏛️</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.7rem', color: '#1e40af' }}>在日大使</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1e3a8a' }}>
+                      {contacts?.japanAmbassador?.name || '未登録'}
+                    </div>
+                  </div>
+                  {contacts?.japanAmbassadorHistory && contacts.japanAmbassadorHistory.length > 0 && (
+                    <button
+                      onClick={() => setShowHistory(showHistory === 'japanAmbassador' ? null : 'japanAmbassador')}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '0.7rem',
+                        backgroundColor: showHistory === 'japanAmbassador' ? '#1e40af' : 'rgba(30, 64, 175, 0.2)',
+                        color: showHistory === 'japanAmbassador' ? 'white' : '#1e40af',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      履歴 ({contacts.japanAmbassadorHistory.length})
+                    </button>
+                  )}
+                </div>
+                {contacts?.japanAmbassador?.notes && (
+                  <div style={{
+                    marginTop: '8px',
+                    marginLeft: '32px',
+                    fontSize: '0.8rem',
+                    color: '#1e40af',
+                    padding: '8px 10px',
+                    background: 'rgba(255,255,255,0.5)',
+                    borderRadius: '6px',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {contacts.japanAmbassador.notes}
+                  </div>
+                )}
+                {showHistory === 'japanAmbassador' && contacts?.japanAmbassadorHistory && (
+                  <div style={{ marginTop: '12px', marginLeft: '32px' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#1e40af', marginBottom: '6px', fontWeight: 600 }}>過去の在日大使</div>
+                    {contacts.japanAmbassadorHistory.map((person, idx) => (
+                      <div key={idx} style={{
+                        padding: '8px 10px',
+                        background: 'rgba(255,255,255,0.5)',
+                        borderRadius: '6px',
+                        marginBottom: '6px',
+                      }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1e3a8a' }}>{person.name}</div>
+                        {person.notes && (
+                          <div style={{ fontSize: '0.75rem', color: '#3b82f6', marginTop: '4px', whiteSpace: 'pre-wrap' }}>
+                            {person.notes}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* その他連絡先 */}
+              {contacts?.additionalContacts && contacts.additionalContacts.length > 0 && (
+                <div style={{ marginTop: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '8px' }}>その他連絡先</div>
+                  {contacts.additionalContacts.map((contact, index) => (
+                    <div key={index} style={{
+                      padding: '10px 12px',
+                      background: '#f9fafb',
+                      borderRadius: '8px',
+                      marginBottom: '6px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span>👤</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>{contact.role}</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1f2937' }}>{contact.name}</div>
+                        </div>
+                      </div>
+                      {contact.notes && (
+                        <div style={{
+                          marginTop: '6px',
+                          marginLeft: '32px',
+                          fontSize: '0.75rem',
+                          color: '#6b7280',
+                          padding: '6px 8px',
+                          background: 'rgba(0,0,0,0.03)',
+                          borderRadius: '6px',
+                          whiteSpace: 'pre-wrap',
+                        }}>
+                          {contact.notes}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* プロジェクト一覧 */}
         <div style={{
