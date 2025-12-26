@@ -26,6 +26,15 @@ export interface ProjectEvent {
   participants?: string    // 参加者・訪問者（カンマ区切り）
   activityCategory?: ActivityCategory  // 訪問 or 内部準備
   createdAt: Date
+  // Lark連携フィールド
+  larkEventId?: string           // LarkカレンダーのイベントID
+  larkCalendarId?: string        // LarkカレンダーID
+  larkSyncStatus?: 'pending' | 'synced' | 'failed' | 'not_synced'
+  larkSyncError?: string         // 同期エラーメッセージ
+  larkLastSyncAt?: Date          // 最終同期日時
+  // イベント時間（Lark連携用）
+  startTime?: string             // 開始時刻 (HH:mm)
+  endTime?: string               // 終了時刻 (HH:mm)
 }
 
 // よく使うイベントタイプ
@@ -183,6 +192,9 @@ export const COUNTRY_INFO: Record<string, CountryInfo> = {
   KE: { code: 'KE', name: 'ケニア', capital: 'ナイロビ', population: '5,400万人', language: 'スワヒリ語・英語', currency: 'ケニアシリング (KES)', timezone: '-6時間', religions: ['キリスト教 86%', 'イスラム教 11%', '伝統宗教 2%'], ethnicities: ['キクユ族 17%', 'ルヒヤ族 14%', 'カレンジン族 13%'], industries: ['農業', '観光', 'IT・フィンテック'], ageStructure: '0-14歳 38%/15-64歳 59%/65歳以上 3%', populationGrowth: '+2.2%' },
   ZA: { code: 'ZA', name: '南アフリカ', capital: 'プレトリア', population: '6,000万人', language: '英語他11言語', currency: 'ランド (ZAR)', timezone: '-7時間', religions: ['キリスト教 80%', '無宗教 15%', '伝統宗教 4%'], ethnicities: ['黒人 81%', '白人 8%', 'カラード 9%'], industries: ['鉱業', '自動車', '金融'], ageStructure: '0-14歳 28%/15-64歳 66%/65歳以上 6%', populationGrowth: '+1.0%' },
   EG: { code: 'EG', name: 'エジプト', capital: 'カイロ', population: '1億人', language: 'アラビア語', currency: 'エジプトポンド (EGP)', timezone: '-7時間', religions: ['イスラム教 90%', 'キリスト教 10%'], ethnicities: ['アラブ人 99%', 'ヌビア人 0.5%', 'その他 0.5%'], industries: ['観光', '石油・ガス', '農業'], ageStructure: '0-14歳 33%/15-64歳 62%/65歳以上 5%', populationGrowth: '+1.7%' },
+  MR: { code: 'MR', name: 'モーリタニア', capital: 'ヌアクショット', population: '470万人', language: 'アラビア語・フランス語', currency: 'ウギア (MRU)', timezone: '-9時間', religions: ['イスラム教 100%'], ethnicities: ['アラブ・ベルベル系 70%', 'アフリカ系 30%'], industries: ['鉄鉱石', '水産業', '畜産'], ageStructure: '0-14歳 38%/15-64歳 58%/65歳以上 4%', populationGrowth: '+2.5%' },
+  SN: { code: 'SN', name: 'セネガル', capital: 'ダカール', population: '1,700万人', language: 'フランス語', currency: 'CFAフラン (XOF)', timezone: '-9時間', religions: ['イスラム教 95%', 'キリスト教 4%', '伝統宗教 1%'], ethnicities: ['ウォロフ族 43%', 'フラニ族 24%', 'セレール族 15%'], industries: ['農業', '水産業', '鉱業'], ageStructure: '0-14歳 42%/15-64歳 55%/65歳以上 3%', populationGrowth: '+2.6%' },
+  DZ: { code: 'DZ', name: 'アルジェリア', capital: 'アルジェ', population: '4,500万人', language: 'アラビア語・フランス語', currency: 'ディナール (DZD)', timezone: '-8時間', religions: ['イスラム教 99%', 'キリスト教 0.3%'], ethnicities: ['アラブ・ベルベル系 99%'], industries: ['石油・天然ガス', '鉄鋼', '農業'], ageStructure: '0-14歳 30%/15-64歳 63%/65歳以上 7%', populationGrowth: '+1.6%' },
   MX: { code: 'MX', name: 'メキシコ', capital: 'メキシコシティ', population: '1.3億人', language: 'スペイン語', currency: 'ペソ (MXN)', timezone: '-15時間', religions: ['カトリック 78%', 'プロテスタント 11%', '無宗教 8%'], ethnicities: ['メスティーソ 62%', '先住民 21%', '白人 12%'], industries: ['自動車', '電子機器', '石油'], ageStructure: '0-14歳 26%/15-64歳 66%/65歳以上 8%', populationGrowth: '+0.8%' },
   CA: { code: 'CA', name: 'カナダ', capital: 'オタワ', population: '3,800万人', language: '英語・フランス語', currency: 'カナダドル (CAD)', timezone: '-12.5〜-17時間', religions: ['キリスト教 53%', '無宗教 35%', 'イスラム教 4%'], ethnicities: ['欧州系 73%', 'アジア系 18%', '先住民 5%'], industries: ['資源', '金融', 'IT'], ageStructure: '0-14歳 16%/15-64歳 66%/65歳以上 18%', populationGrowth: '+0.9%' },
   IT: { code: 'IT', name: 'イタリア', capital: 'ローマ', population: '6,000万人', language: 'イタリア語', currency: 'ユーロ (EUR)', timezone: '-8時間', religions: ['カトリック 74%', '無宗教 20%', 'イスラム教 4%'], ethnicities: ['イタリア人 92%', 'ルーマニア系 2%', 'アルバニア系 1%'], industries: ['ファッション', '自動車', '観光'], ageStructure: '0-14歳 13%/15-64歳 64%/65歳以上 23%', populationGrowth: '-0.2%' },
@@ -228,12 +240,10 @@ export const COUNTRY_INFO: Record<string, CountryInfo> = {
   // アフリカ追加
   GH: { code: 'GH', name: 'ガーナ', capital: 'アクラ', population: '3,100万人', language: '英語', currency: 'セディ (GHS)', timezone: '-9時間', religions: ['キリスト教 71%', 'イスラム教 18%', '伝統宗教 5%'], ethnicities: ['アカン族 48%', 'モレ・ダグバニ族 17%', 'エウェ族 14%'], industries: ['金', 'カカオ', '石油'], ageStructure: '0-14歳 38%/15-64歳 58%/65歳以上 4%', populationGrowth: '+2.1%' },
   CI: { code: 'CI', name: 'コートジボワール', capital: 'ヤムスクロ', population: '2,600万人', language: 'フランス語', currency: 'CFAフラン (XOF)', timezone: '-9時間', religions: ['イスラム教 43%', 'キリスト教 34%', '伝統宗教 12%'], ethnicities: ['アカン族 28%', 'ボルタ族 16%', 'マンデ族 15%'], industries: ['カカオ', '石油', '農業'], ageStructure: '0-14歳 41%/15-64歳 56%/65歳以上 3%', populationGrowth: '+2.2%' },
-  SN: { code: 'SN', name: 'セネガル', capital: 'ダカール', population: '1,700万人', language: 'フランス語', currency: 'CFAフラン (XOF)', timezone: '-9時間', religions: ['イスラム教 96%', 'キリスト教 4%', '伝統宗教 1%'], ethnicities: ['ウォロフ族 38%', 'プル族 27%', 'セレール族 15%'], industries: ['農業', '水産業', '鉱業'], ageStructure: '0-14歳 42%/15-64歳 55%/65歳以上 3%', populationGrowth: '+2.5%' },
   TZ: { code: 'TZ', name: 'タンザニア', capital: 'ドドマ', population: '6,000万人', language: 'スワヒリ語・英語', currency: 'シリング (TZS)', timezone: '-6時間', religions: ['キリスト教 61%', 'イスラム教 35%', '伝統宗教 2%'], ethnicities: ['スクマ族 16%', 'チャガ族 6%', 'ハヤ族 5%'], industries: ['農業', '観光', '鉱業'], ageStructure: '0-14歳 44%/15-64歳 53%/65歳以上 3%', populationGrowth: '+2.9%' },
   UG: { code: 'UG', name: 'ウガンダ', capital: 'カンパラ', population: '4,500万人', language: '英語・スワヒリ語', currency: 'シリング (UGX)', timezone: '-6時間', religions: ['キリスト教 85%', 'イスラム教 14%', '伝統宗教 1%'], ethnicities: ['バガンダ族 17%', 'バニャンコレ族 10%', 'バソガ族 8%'], industries: ['農業', '観光', '水産業'], ageStructure: '0-14歳 48%/15-64歳 50%/65歳以上 2%', populationGrowth: '+3.0%' },
   ET: { code: 'ET', name: 'エチオピア', capital: 'アディスアベバ', population: '1.2億人', language: 'アムハラ語', currency: 'ブル (ETB)', timezone: '-6時間', religions: ['キリスト教 62%', 'イスラム教 34%', '伝統宗教 3%'], ethnicities: ['オロモ族 35%', 'アムハラ族 27%', 'ソマリ族 6%'], industries: ['農業', '繊維', '皮革'], ageStructure: '0-14歳 40%/15-64歳 57%/65歳以上 3%', populationGrowth: '+2.5%' },
   MA: { code: 'MA', name: 'モロッコ', capital: 'ラバト', population: '3,700万人', language: 'アラビア語・ベルベル語', currency: 'ディルハム (MAD)', timezone: '-8時間', religions: ['イスラム教 99%', 'キリスト教 0.5%', 'ユダヤ教 0.2%'], ethnicities: ['アラブ・ベルベル 99%', 'その他 1%'], industries: ['観光', 'リン鉱石', '繊維'], ageStructure: '0-14歳 26%/15-64歳 66%/65歳以上 8%', populationGrowth: '+1.0%' },
-  DZ: { code: 'DZ', name: 'アルジェリア', capital: 'アルジェ', population: '4,400万人', language: 'アラビア語', currency: 'ディナール (DZD)', timezone: '-8時間', religions: ['イスラム教 99%', 'キリスト教 0.5%', 'その他 0.5%'], ethnicities: ['アラブ・ベルベル 99%', 'その他 1%'], industries: ['石油・ガス', '鉱業', '農業'], ageStructure: '0-14歳 28%/15-64歳 65%/65歳以上 7%', populationGrowth: '+1.5%' },
   TN: { code: 'TN', name: 'チュニジア', capital: 'チュニス', population: '1,200万人', language: 'アラビア語', currency: 'ディナール (TND)', timezone: '-8時間', religions: ['イスラム教 99%', 'キリスト教 0.5%', 'ユダヤ教 0.1%'], ethnicities: ['アラブ 98%', 'ベルベル 1%', '欧州系 1%'], industries: ['観光', '石油', '繊維'], ageStructure: '0-14歳 23%/15-64歳 68%/65歳以上 9%', populationGrowth: '+0.9%' },
   // 中東追加
   QA: { code: 'QA', name: 'カタール', capital: 'ドーハ', population: '290万人', language: 'アラビア語', currency: 'リヤル (QAR)', timezone: '-6時間', religions: ['イスラム教 65%', 'キリスト教 14%', 'ヒンドゥー教 14%'], ethnicities: ['カタール人 12%', '南アジア系 50%', 'アラブ系 20%'], industries: ['石油・ガス', '金融', '建設'], ageStructure: '0-14歳 13%/15-64歳 85%/65歳以上 2%', populationGrowth: '+1.5%' },
@@ -417,3 +427,47 @@ export const STATUS_LABELS: Record<ProjectStatus, string> = {
 export const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
   Object.entries(COUNTRY_INFO).map(([code, info]) => [code, info.name])
 )
+
+// ===== Lark連携 =====
+
+// Lark連携設定
+export interface LarkSettings {
+  id: string
+  enabled: boolean                    // 連携ON/OFF
+  appId?: string                      // Lark App ID
+  appSecret?: string                  // Lark App Secret（暗号化推奨）
+  defaultCalendarId?: string          // デフォルトカレンダー
+  autoSync: boolean                   // 自動同期ON/OFF
+  eventDurationMinutes: number        // デフォルトイベント時間（分）
+  reminderMinutes: number             // リマインダー時間（分）
+  updatedAt: Date
+}
+
+// Larkユーザーマッピング（担当者名 → Lark User）
+export interface LarkUserMapping {
+  id: string
+  displayName: string                 // アプリ内の表示名（例: "木下"）
+  larkEmail: string                   // Larkのメールアドレス
+  larkUserId?: string                 // Lark User ID（キャッシュ）
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Lark APIレスポンス型
+export interface LarkTokenResponse {
+  code: number
+  msg: string
+  tenant_access_token?: string
+  expire?: number
+}
+
+export interface LarkEventResponse {
+  code: number
+  msg: string
+  data?: {
+    event?: {
+      event_id: string
+      organizer_calendar_id: string
+    }
+  }
+}

@@ -6,6 +6,7 @@ import { ProjectHistory } from './ProjectHistory'
 
 interface ProjectCardProps {
   project: Project
+  countryName?: string
   onEdit: (project: Project) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: ProjectStatus) => void
@@ -19,7 +20,7 @@ const statusOrder: ProjectStatus[] = [
   'completed',
 ]
 
-export function ProjectCard({ project, onEdit, onDelete, onStatusChange, onDiplomacyPhaseChange }: ProjectCardProps) {
+export function ProjectCard({ project, countryName, onEdit, onDelete, onStatusChange, onDiplomacyPhaseChange }: ProjectCardProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const diplomacyPhase = project.diplomacyPhase ?? 0
 
@@ -38,6 +39,7 @@ export function ProjectCard({ project, onEdit, onDelete, onStatusChange, onDiplo
     <ProjectHistory
       projectId={project.id}
       projectName={project.name}
+      countryName={countryName}
       isOpen={isHistoryOpen}
       onClose={() => setIsHistoryOpen(false)}
       currentDiplomacyPhase={diplomacyPhase}

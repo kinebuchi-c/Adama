@@ -7,6 +7,7 @@ import { ITNewsPanel } from '../components/ITNewsPanel'
 import { DiplomacyTips } from '../components/DiplomacyTips'
 import { RecentActivity } from '../components/RecentActivity'
 import { PersonSchedule } from '../components/PersonSchedule'
+import { LarkSettingsModal } from '../components/LarkSettings'
 import { useProjectStore } from '../stores/projectStore'
 import { useNeemStore } from '../stores/neemStore'
 import { useTerritoryStore } from '../stores/territoryStore'
@@ -17,6 +18,7 @@ export function Home() {
   const { loadGrowth } = useNeemStore()
   const { getTotalArea } = useTerritoryStore()
   const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string } | null>(null)
+  const [showLarkSettings, setShowLarkSettings] = useState(false)
 
   useEffect(() => {
     loadProjects()
@@ -69,10 +71,30 @@ export function Home() {
               Customer Cloud International Project Dashboard
             </h1>
           </div>
-          <div style={{ width: '280px' }}>
-            <CountrySearch onSelect={(code, name) => {
-              setSelectedCountry({ code, name })
-            }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '280px' }}>
+              <CountrySearch onSelect={(code, name) => {
+                setSelectedCountry({ code, name })
+              }} />
+            </div>
+            <button
+              onClick={() => setShowLarkSettings(true)}
+              style={{
+                padding: '10px',
+                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                color: 'white',
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title="Lark連携設定"
+            >
+              🔗
+            </button>
           </div>
         </div>
 
@@ -280,6 +302,8 @@ export function Home() {
         </div>
       </div>
 
+      {/* Lark設定モーダル */}
+      <LarkSettingsModal isOpen={showLarkSettings} onClose={() => setShowLarkSettings(false)} />
     </div>
   )
 }

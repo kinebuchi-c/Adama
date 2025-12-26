@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Project, BaobabGrowth, ProjectEvent, CountryContact } from '../types'
+import type { Project, BaobabGrowth, ProjectEvent, CountryContact, LarkSettings, LarkUserMapping } from '../types'
 import type {
   SuginamiUserProfile,
   SuginamiTask,
@@ -12,6 +12,8 @@ export class BaobabDatabase extends Dexie {
   projectEvents!: Table<ProjectEvent>
   baobabGrowth!: Table<BaobabGrowth>
   countryContacts!: Table<CountryContact>
+  larkSettings!: Table<LarkSettings>
+  larkUserMappings!: Table<LarkUserMapping>
   suginamiUserProfile!: Table<SuginamiUserProfile>
   suginamiTasks!: Table<SuginamiTask>
   suginamiDocuments!: Table<SuginamiDocument>
@@ -96,6 +98,20 @@ export class BaobabDatabase extends Dexie {
       suginamiDocuments: 'id, type, status, linkedTaskId',
       languagePreference: 'id',
     })
+
+    // v7: Lark連携テーブル追加
+    this.version(7).stores({
+      projects: 'id, countryCode, status, diplomacyPhase, createdAt, updatedAt',
+      projectEvents: 'id, projectId, date, eventType, larkSyncStatus, createdAt',
+      baobabGrowth: 'id',
+      countryContacts: 'id, countryCode, updatedAt',
+      larkSettings: 'id',
+      larkUserMappings: 'id, displayName, larkEmail',
+      suginamiUserProfile: 'id',
+      suginamiTasks: 'id, templateId, category, status, priority, order',
+      suginamiDocuments: 'id, type, status, linkedTaskId',
+      languagePreference: 'id',
+    })
   }
 }
 
@@ -166,24 +182,27 @@ export async function getProjectEvents(projectId: string): Promise<ProjectEvent[
 
 export async function addProjectEvent(
   event: Omit<ProjectEvent, 'id' | 'createdAt'>
-): Promise<string> {
+): Promise<ProjectEvent> {
   const now = new Date()
   const id = crypto.randomUUID()
 
-  await db.projectEvents.add({
+  const newEvent: ProjectEvent = {
     ...event,
     id,
     createdAt: now,
-  })
+  }
 
-  return id
+  await db.projectEvents.add(newEvent)
+
+  return newEvent
 }
 
 export async function updateProjectEvent(
   id: string,
   updates: Partial<ProjectEvent>
-): Promise<void> {
+): Promise<ProjectEvent | undefined> {
   await db.projectEvents.update(id, updates)
+  return db.projectEvents.get(id)
 }
 
 export async function deleteProjectEvent(id: string): Promise<void> {
@@ -420,4 +439,103 @@ export async function saveLanguagePreference(
       updatedAt: now,
     })
   }
+}
+
+// ===== Lark連携ヘルパー関数 =====
+
+// Lark設定
+export async function getLarkSettings(): Promise<LarkSettings | undefined> {
+  return db.larkSettings.get('main')
+}
+
+export async function saveLarkSettings(
+  settings: Omit<LarkSettings, 'id' | 'updatedAt'>
+): Promise<void> {
+  const now = new Date()
+  const existing = await getLarkSettings()
+
+  if (existing) {
+    await db.larkSettings.update('main', {
+      ...settings,
+      updatedAt: now,
+    })
+  } else {
+    await db.larkSettings.add({
+      ...settings,
+      id: 'main',
+      updatedAt: now,
+    })
+  }
+}
+
+export async function initializeLarkSettings(): Promise<LarkSettings> {
+  const existing = await getLarkSettings()
+  if (existing) return existing
+
+  const defaultSettings: LarkSettings = {
+    id: 'main',
+    enabled: false,
+    autoSync: true,
+    eventDurationMinutes: 60,
+    reminderMinutes: 30,
+    updatedAt: new Date(),
+  }
+
+  await db.larkSettings.add(defaultSettings)
+  return defaultSettings
+}
+
+// Larkユーザーマッピング
+export async function getAllLarkUserMappings(): Promise<LarkUserMapping[]> {
+  return db.larkUserMappings.toArray()
+}
+
+export async function getLarkUserMappingByName(displayName: string): Promise<LarkUserMapping | undefined> {
+  return db.larkUserMappings.where('displayName').equals(displayName).first()
+}
+
+export async function addLarkUserMapping(
+  mapping: Omit<LarkUserMapping, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> {
+  const now = new Date()
+  const id = crypto.randomUUID()
+
+  await db.larkUserMappings.add({
+    ...mapping,
+    id,
+    createdAt: now,
+    updatedAt: now,
+  })
+
+  return id
+}
+
+export async function updateLarkUserMapping(
+  id: string,
+  updates: Partial<LarkUserMapping>
+): Promise<void> {
+  await db.larkUserMappings.update(id, {
+    ...updates,
+    updatedAt: new Date(),
+  })
+}
+
+export async function deleteLarkUserMapping(id: string): Promise<void> {
+  await db.larkUserMappings.delete(id)
+}
+
+// イベントのLark同期ステータス更新
+export async function updateEventLarkSync(
+  eventId: string,
+  syncData: {
+    larkEventId?: string
+    larkCalendarId?: string
+    larkSyncStatus: 'pending' | 'synced' | 'failed' | 'not_synced'
+    larkSyncError?: string
+  }
+): Promise<void> {
+  await db.projectEvents.update(eventId, {
+    ...syncData,
+    larkLastSyncAt: new Date(),
+  })
 }

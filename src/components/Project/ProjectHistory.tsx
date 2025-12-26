@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import type { ProjectEvent, EventType, DiplomacyPhase, ProjectStatus } from '../../types'
 import { EVENT_PRESETS, EVENT_AUTO_UPDATE, DIPLOMACY_PHASE_LABELS, STATUS_LABELS } from '../../types'
 import { getProjectEvents, addProjectEvent, deleteProjectEvent, updateProjectEvent } from '../../db/database'
+import { createLarkEvent, updateLarkEvent, deleteLarkEvent, isLarkSyncEnabled } from '../../services/larkService'
 
 interface ProjectHistoryProps {
   projectId: string
   projectName: string
+  countryName?: string
   isOpen: boolean
   onClose: () => void
   currentDiplomacyPhase?: DiplomacyPhase
@@ -16,6 +18,7 @@ interface ProjectHistoryProps {
 export function ProjectHistory({
   projectId,
   projectName,
+  countryName,
   isOpen,
   onClose,
   currentDiplomacyPhase,
@@ -26,6 +29,9 @@ export function ProjectHistory({
   const [isAdding, setIsAdding] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [autoSync, setAutoSync] = useState(true)
+  const [larkEnabled, setLarkEnabled] = useState(false)
+  const [syncToLark, setSyncToLark] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(false)
   const [newEvent, setNewEvent] = useState({
     date: new Date().toISOString().split('T')[0],
     title: '',
@@ -33,6 +39,8 @@ export function ProjectHistory({
     imageUrl: '',
     eventType: 'completed' as EventType,
     participants: '',
+    startTime: '10:00',
+    endTime: '11:00',
   })
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -62,8 +70,18 @@ export function ProjectHistory({
   useEffect(() => {
     if (isOpen && projectId) {
       loadEvents()
+      checkLarkEnabled()
     }
   }, [isOpen, projectId])
+
+  const checkLarkEnabled = async () => {
+    const enabled = await isLarkSyncEnabled()
+    console.log('Lark enabled check:', enabled, 'projectId:', projectId, 'isOpen:', isOpen)
+    setLarkEnabled(enabled)
+    if (!enabled) {
+      console.warn('Lark is disabled. Check settings: Settings > Lark連携設定')
+    }
+  }
 
   const loadEvents = async () => {
     const loaded = await getProjectEvents(projectId)
@@ -108,57 +126,99 @@ export function ProjectHistory({
   }
 
   const handleAddEvent = async () => {
-    if (!newEvent.title || !newEvent.date) return
-
-    await addProjectEvent({
-      projectId,
-      date: new Date(newEvent.date),
-      title: newEvent.title,
-      description: newEvent.description || undefined,
-      imageUrl: newEvent.imageUrl || undefined,
-      eventType: newEvent.eventType,
-      participants: newEvent.participants || undefined,
-    })
-
-    // 完了イベントの場合、自動同期が有効なら更新
-    if (autoSync && newEvent.eventType === 'completed' && onUpdateProject) {
-      const update = EVENT_AUTO_UPDATE[newEvent.title]
-      if (update) {
-        const updates: { diplomacyPhase?: DiplomacyPhase; status?: ProjectStatus } = {}
-
-        // フェーズは現在より高い場合のみ更新
-        if (update.diplomacyPhase !== undefined &&
-            currentDiplomacyPhase !== undefined &&
-            update.diplomacyPhase > currentDiplomacyPhase) {
-          updates.diplomacyPhase = update.diplomacyPhase
-        }
-
-        // ステータスは変更がある場合のみ更新
-        if (update.status && update.status !== currentStatus) {
-          updates.status = update.status
-        }
-
-        if (Object.keys(updates).length > 0) {
-          onUpdateProject(updates)
-        }
-      }
+    console.log('handleAddEvent called:', { title: newEvent.title, date: newEvent.date, eventType: newEvent.eventType })
+    if (!newEvent.title || !newEvent.date) {
+      console.log('handleAddEvent: validation failed - missing title or date')
+      return
     }
 
-    setNewEvent({
-      date: new Date().toISOString().split('T')[0],
-      title: '',
-      description: '',
-      imageUrl: '',
-      eventType: 'completed',
-      participants: '',
-    })
-    setIsAdding(false)
-    await loadEvents()
+    setIsSyncing(true)
+    console.log('handleAddEvent: adding event to database...')
+
+    try {
+      const addedEvent = await addProjectEvent({
+        projectId,
+        date: new Date(newEvent.date),
+        title: newEvent.title,
+        description: newEvent.description || undefined,
+        imageUrl: newEvent.imageUrl || undefined,
+        eventType: newEvent.eventType,
+        participants: newEvent.participants || undefined,
+        startTime: newEvent.eventType === 'scheduled' ? newEvent.startTime : undefined,
+        endTime: newEvent.eventType === 'scheduled' ? newEvent.endTime : undefined,
+        larkSyncStatus: 'not_synced',
+      })
+      console.log('handleAddEvent: event added to database:', addedEvent)
+
+      // 予定イベントでLark同期が有効な場合
+      console.log('Lark sync check:', {
+        eventType: newEvent.eventType,
+        larkEnabled,
+        syncToLark,
+        hasAddedEvent: !!addedEvent,
+        countryName
+      })
+      if (newEvent.eventType === 'scheduled' && larkEnabled && syncToLark && addedEvent) {
+        console.log('Creating Lark event...')
+        const result = await createLarkEvent(addedEvent, projectName, countryName)
+        if (!result.success) {
+          console.error('Lark sync failed:', result.error)
+          alert(`Larkカレンダー登録に失敗しました: ${result.error}\n\n※ブラウザからのLark API直接呼び出しはCORSにより制限されています。本番環境ではAWS Lambdaを経由する必要があります。`)
+        } else {
+          console.log('Lark sync successful:', result.larkEventId)
+        }
+      } else {
+        console.log('Lark sync skipped')
+      }
+
+      // 完了イベントの場合、自動同期が有効なら更新
+      if (autoSync && newEvent.eventType === 'completed' && onUpdateProject) {
+        const update = EVENT_AUTO_UPDATE[newEvent.title]
+        if (update) {
+          const updates: { diplomacyPhase?: DiplomacyPhase; status?: ProjectStatus } = {}
+
+          // フェーズは現在より高い場合のみ更新
+          if (update.diplomacyPhase !== undefined &&
+              currentDiplomacyPhase !== undefined &&
+              update.diplomacyPhase > currentDiplomacyPhase) {
+            updates.diplomacyPhase = update.diplomacyPhase
+          }
+
+          // ステータスは変更がある場合のみ更新
+          if (update.status && update.status !== currentStatus) {
+            updates.status = update.status
+          }
+
+          if (Object.keys(updates).length > 0) {
+            onUpdateProject(updates)
+          }
+        }
+      }
+
+      setNewEvent({
+        date: new Date().toISOString().split('T')[0],
+        title: '',
+        description: '',
+        imageUrl: '',
+        eventType: 'completed',
+        participants: '',
+        startTime: '10:00',
+        endTime: '11:00',
+      })
+      setIsAdding(false)
+      await loadEvents()
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = async (event: ProjectEvent) => {
     if (confirm('このイベントを削除しますか？')) {
-      await deleteProjectEvent(eventId)
+      // Larkから削除
+      if (event.larkEventId) {
+        await deleteLarkEvent(event)
+      }
+      await deleteProjectEvent(event.id)
       await loadEvents()
     }
   }
@@ -172,32 +232,62 @@ export function ProjectHistory({
       imageUrl: event.imageUrl || '',
       eventType: event.eventType || 'completed',
       participants: event.participants || '',
+      startTime: event.startTime || '10:00',
+      endTime: event.endTime || '11:00',
     })
+    setSyncToLark(!!event.larkEventId || true)
     setIsAdding(false)
   }
 
   const handleUpdateEvent = async () => {
     if (!editingEventId || !newEvent.title || !newEvent.date) return
 
-    await updateProjectEvent(editingEventId, {
-      date: new Date(newEvent.date),
-      title: newEvent.title,
-      description: newEvent.description || undefined,
-      imageUrl: newEvent.imageUrl || undefined,
-      eventType: newEvent.eventType,
-      participants: newEvent.participants || undefined,
-    })
+    setIsSyncing(true)
 
-    setEditingEventId(null)
-    setNewEvent({
-      date: new Date().toISOString().split('T')[0],
-      title: '',
-      description: '',
-      imageUrl: '',
-      eventType: 'completed',
-      participants: '',
-    })
-    await loadEvents()
+    try {
+      const updatedEvent = await updateProjectEvent(editingEventId, {
+        date: new Date(newEvent.date),
+        title: newEvent.title,
+        description: newEvent.description || undefined,
+        imageUrl: newEvent.imageUrl || undefined,
+        eventType: newEvent.eventType,
+        participants: newEvent.participants || undefined,
+        startTime: newEvent.eventType === 'scheduled' ? newEvent.startTime : undefined,
+        endTime: newEvent.eventType === 'scheduled' ? newEvent.endTime : undefined,
+      })
+
+      // 予定イベントでLark同期が有効な場合
+      if (newEvent.eventType === 'scheduled' && larkEnabled && syncToLark && updatedEvent) {
+        if (updatedEvent.larkEventId) {
+          // 既存のLarkイベントを更新
+          const result = await updateLarkEvent(updatedEvent, projectName, countryName)
+          if (!result.success) {
+            console.error('Lark sync failed:', result.error)
+          }
+        } else {
+          // 新しくLarkイベントを作成
+          const result = await createLarkEvent(updatedEvent, projectName, countryName)
+          if (!result.success) {
+            console.error('Lark sync failed:', result.error)
+          }
+        }
+      }
+
+      setEditingEventId(null)
+      setNewEvent({
+        date: new Date().toISOString().split('T')[0],
+        title: '',
+        description: '',
+        imageUrl: '',
+        eventType: 'completed',
+        participants: '',
+        startTime: '10:00',
+        endTime: '11:00',
+      })
+      await loadEvents()
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
   const handleCancelEdit = () => {
@@ -209,6 +299,8 @@ export function ProjectHistory({
       imageUrl: '',
       eventType: 'completed',
       participants: '',
+      startTime: '10:00',
+      endTime: '11:00',
     })
   }
 
@@ -461,6 +553,42 @@ export function ProjectHistory({
                 />
               </div>
 
+              {/* 時間入力（予定イベントの場合のみ） */}
+              {newEvent.eventType === 'scheduled' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                    時間
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="time"
+                      value={newEvent.startTime}
+                      onChange={(e) => setNewEvent({ ...newEvent, startTime: e.target.value })}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                      }}
+                    />
+                    <span style={{ color: '#6b7280' }}>~</span>
+                    <input
+                      type="time"
+                      value={newEvent.endTime}
+                      onChange={(e) => setNewEvent({ ...newEvent, endTime: e.target.value })}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
                   イベント内容 *
@@ -539,6 +667,45 @@ export function ProjectHistory({
                           <span>{change}</span>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Lark連携オプション（予定イベントでLarkが有効な場合のみ表示） */}
+              {newEvent.eventType === 'scheduled' && larkEnabled && (
+                <div style={{
+                  marginBottom: '12px',
+                  background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                }}>
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: '#3730a3',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={syncToLark}
+                      onChange={(e) => setSyncToLark(e.target.checked)}
+                      style={{ width: '16px', height: '16px', accentColor: '#6366f1' }}
+                    />
+                    <span>Larkカレンダーに登録</span>
+                  </label>
+                  {syncToLark && (
+                    <div style={{
+                      marginTop: '8px',
+                      paddingLeft: '24px',
+                      fontSize: '0.75rem',
+                      color: '#4338ca',
+                    }}>
+                      参加者にカレンダー招待が送信されます
                     </div>
                   )}
                 </div>
@@ -661,6 +828,7 @@ export function ProjectHistory({
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   onClick={editingEventId ? handleCancelEdit : () => setIsAdding(false)}
+                  disabled={isSyncing}
                   style={{
                     flex: 1,
                     padding: '10px',
@@ -669,28 +837,48 @@ export function ProjectHistory({
                     border: 'none',
                     borderRadius: '8px',
                     fontWeight: 500,
-                    cursor: 'pointer',
+                    cursor: isSyncing ? 'not-allowed' : 'pointer',
+                    opacity: isSyncing ? 0.6 : 1,
                   }}
                 >
                   キャンセル
                 </button>
                 <button
                   onClick={editingEventId ? handleUpdateEvent : handleAddEvent}
-                  disabled={!newEvent.title || !newEvent.date}
+                  disabled={!newEvent.title || !newEvent.date || isSyncing}
                   style={{
                     flex: 1,
                     padding: '10px',
-                    background: newEvent.title && newEvent.date
+                    background: (newEvent.title && newEvent.date && !isSyncing)
                       ? (editingEventId ? '#f59e0b' : '#3b82f6')
                       : '#d1d5db',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     fontWeight: 500,
-                    cursor: newEvent.title && newEvent.date ? 'pointer' : 'not-allowed',
+                    cursor: (newEvent.title && newEvent.date && !isSyncing) ? 'pointer' : 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
                   }}
                 >
-                  {editingEventId ? '更新' : '追加'}
+                  {isSyncing ? (
+                    <>
+                      <span style={{
+                        display: 'inline-block',
+                        width: '14px',
+                        height: '14px',
+                        border: '2px solid rgba(255,255,255,0.3)',
+                        borderTopColor: 'white',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                      }} />
+                      処理中...
+                    </>
+                  ) : (
+                    editingEventId ? '更新' : '追加'
+                  )}
                 </button>
               </div>
             </div>
@@ -797,7 +985,7 @@ export function ProjectHistory({
                           ✏️
                         </button>
                         <button
-                          onClick={() => handleDeleteEvent(event.id)}
+                          onClick={() => handleDeleteEvent(event)}
                           style={{
                             background: 'none',
                             border: 'none',
@@ -813,12 +1001,60 @@ export function ProjectHistory({
                       </div>
                     </div>
                     <div style={{
-                      fontSize: '0.9rem',
-                      fontWeight: 500,
-                      color: '#1f2937',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '2px',
                     }}>
-                      {event.title}
+                      <span style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 500,
+                        color: '#1f2937',
+                      }}>
+                        {event.title}
+                      </span>
+                      {/* Lark同期ステータス */}
+                      {isScheduled && event.larkSyncStatus === 'synced' && (
+                        <span
+                          style={{
+                            fontSize: '0.65rem',
+                            background: '#6366f1',
+                            color: 'white',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontWeight: 500,
+                          }}
+                          title="Larkカレンダーに登録済み"
+                        >
+                          Lark
+                        </span>
+                      )}
+                      {isScheduled && event.larkSyncStatus === 'failed' && (
+                        <span
+                          style={{
+                            fontSize: '0.65rem',
+                            background: '#ef4444',
+                            color: 'white',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontWeight: 500,
+                          }}
+                          title={event.larkSyncError || 'Lark同期失敗'}
+                        >
+                          同期失敗
+                        </span>
+                      )}
                     </div>
+                    {/* 時間表示（予定イベントの場合） */}
+                    {isScheduled && event.startTime && (
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#f97316',
+                        marginBottom: '4px',
+                      }}>
+                        {event.startTime}{event.endTime ? ` ~ ${event.endTime}` : ''}
+                      </div>
+                    )}
                     {event.description && (
                       <div style={{
                         fontSize: '0.8rem',

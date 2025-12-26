@@ -179,6 +179,7 @@ export function ProjectList({
               <ProjectCard
                 key={project.id}
                 project={project}
+                countryName={countryName}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onStatusChange={onStatusChange}

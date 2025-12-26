@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLiveQuery } from 'dexie-react-hooks'
 import type { ProjectEvent, ActivityCategory } from '../types'
 import { db } from '../db/database'
 import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS } from '../types'
@@ -11,43 +12,37 @@ interface ActivityWithProject extends ProjectEvent {
 
 export function SchedulePage() {
   const navigate = useNavigate()
-  const [scheduledActivities, setScheduledActivities] = useState<ActivityWithProject[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    loadScheduledActivities()
-  }, [])
+  // useLiveQueryでデータベースの変更を自動監視
+  const allEvents = useLiveQuery(() => db.projectEvents.toArray())
+  const projects = useLiveQuery(() => db.projects.toArray())
 
-  const loadScheduledActivities = async () => {
-    try {
-      const allEvents = await db.projectEvents.toArray()
-      const projects = await db.projects.toArray()
-      const projectMap = new Map(projects.map(p => [p.id, p]))
-
-      const activitiesWithProject: ActivityWithProject[] = allEvents
-        .map(event => {
-          const project = projectMap.get(event.projectId)
-          if (!project) return null
-          return {
-            ...event,
-            projectName: project.name,
-            countryCode: project.countryCode,
-          }
-        })
-        .filter((a): a is ActivityWithProject => a !== null)
-
-      // 予定のみ：日付昇順（近い順）
-      const scheduled = activitiesWithProject
-        .filter(a => a.eventType === 'scheduled')
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-
-      setScheduledActivities(scheduled)
-    } catch (error) {
-      console.error('Failed to load activities:', error)
-    } finally {
-      setIsLoading(false)
+  const scheduledActivities = useMemo(() => {
+    if (!allEvents || !projects) {
+      return []
     }
-  }
+
+    const projectMap = new Map(projects.map(p => [p.id, p]))
+
+    const activitiesWithProject: ActivityWithProject[] = allEvents
+      .map(event => {
+        const project = projectMap.get(event.projectId)
+        if (!project) return null
+        return {
+          ...event,
+          projectName: project.name,
+          countryCode: project.countryCode,
+        }
+      })
+      .filter((a): a is ActivityWithProject => a !== null)
+
+    // 予定のみ：日付昇順（近い順）
+    return activitiesWithProject
+      .filter(a => a.eventType === 'scheduled')
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }, [allEvents, projects])
+
+  const isLoading = allEvents === undefined || projects === undefined
 
   const formatDate = (date: Date) => {
     const d = new Date(date)
