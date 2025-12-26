@@ -267,7 +267,7 @@ export async function createLarkEvent(
     titleParts.push(event.title)
     const eventSummary = titleParts.join(' / ')
 
-    // Build request body
+    // Build request body (attendees will be added via separate API call)
     const requestBody: Record<string, unknown> = {
       summary: eventSummary,
       description: event.description || '',
@@ -280,17 +280,9 @@ export async function createLarkEvent(
       reminders: settings.reminderMinutes > 0 ? [{
         minutes: settings.reminderMinutes,
       }] : [],
-    }
-
-    // If user is logged in via OAuth, add them as attendee
-    // This allows them to see the event in their calendar as an invitation
-    if (settings.userOpenId) {
-      requestBody.attendees = [{
-        type: 'user',
-        user_id: settings.userOpenId,
-        is_optional: false,
-      }]
-      console.log('Adding user as attendee:', settings.userOpenId)
+      // Allow attendees to fully modify event
+      attendee_ability: 'can_modify_event',
+      visibility: 'default',
     }
 
     // In production, include credentials for Lambda proxy
@@ -335,6 +327,45 @@ export async function createLarkEvent(
 
     const larkEventId = data.data.event.event_id
     const larkCalendarId = data.data.event.organizer_calendar_id
+
+    // Add attendee via separate API call if user is logged in
+    if (settings.userOpenId) {
+      console.log('Adding attendee via separate API call...')
+      const attendeeBody: Record<string, unknown> = {
+        attendees: [{
+          type: 'user',
+          user_id: settings.userOpenId,
+          is_optional: false,
+        }],
+        need_notification: true,
+      }
+
+      if (!isDev) {
+        attendeeBody.app_id = settings.appId
+        attendeeBody.app_secret = settings.appSecret
+      }
+
+      const attendeeResponse = await fetch(
+        `${LARK_API_BASE}/calendar/v4/calendars/${larkCalendarId}/events/${larkEventId}/attendees?user_id_type=open_id`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(attendeeBody),
+        }
+      )
+
+      const attendeeText = await attendeeResponse.text()
+      console.log('Attendee API response:', attendeeText)
+
+      try {
+        const attendeeData = JSON.parse(attendeeText)
+        if (attendeeData.code !== 0) {
+          console.error('Failed to add attendee:', attendeeData.msg)
+        }
+      } catch (e) {
+        console.error('Failed to parse attendee response:', attendeeText)
+      }
+    }
 
     // Update local event with Lark info
     await updateEventLarkSync(event.id, {
