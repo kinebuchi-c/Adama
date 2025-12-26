@@ -8,7 +8,8 @@ import {
   addLarkUserMapping,
   deleteLarkUserMapping,
 } from '../db/database'
-import { testLarkConnection } from '../services/larkService'
+import { testLarkConnection, getCalendarList, type LarkCalendar } from '../services/larkService'
+import { getOAuthAuthorizationUrl, getCurrentUser, clearUserAuth } from '../services/larkOAuth'
 
 interface LarkSettingsProps {
   isOpen: boolean
@@ -22,12 +23,21 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
   const [isTesting, setIsTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
   const [newMapping, setNewMapping] = useState({ displayName: '', larkEmail: '' })
+  const [calendars, setCalendars] = useState<LarkCalendar[]>([])
+  const [isLoadingCalendars, setIsLoadingCalendars] = useState(false)
+  const [oauthUser, setOauthUser] = useState<{ name?: string; openId?: string } | null>(null)
 
   useEffect(() => {
     if (isOpen) {
       loadSettings()
+      loadOAuthUser()
     }
   }, [isOpen])
+
+  const loadOAuthUser = async () => {
+    const user = await getCurrentUser()
+    setOauthUser(user)
+  }
 
   const loadSettings = async () => {
     setIsLoading(true)
@@ -44,6 +54,26 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
     }
   }
 
+  const handleOAuthLogin = () => {
+    if (!settings?.appId) {
+      setTestResult({ success: false, message: 'App IDを入力してください' })
+      return
+    }
+
+    const redirectUri = `${window.location.origin}/auth/lark/callback`
+    const authUrl = getOAuthAuthorizationUrl(settings.appId, redirectUri)
+    window.location.href = authUrl
+  }
+
+  const handleOAuthLogout = async () => {
+    await clearUserAuth()
+    setOauthUser(null)
+    if (settings) {
+      setSettings({ ...settings, useOAuth: false })
+    }
+    setTestResult({ success: true, message: 'Larkアカウントの連携を解除しました' })
+  }
+
   const handleSave = async () => {
     if (!settings) return
 
@@ -56,6 +86,7 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
         autoSync: settings.autoSync,
         eventDurationMinutes: settings.eventDurationMinutes,
         reminderMinutes: settings.reminderMinutes,
+        useOAuth: settings.useOAuth,
       })
       setTestResult({ success: true, message: '設定を保存しました' })
       setTimeout(() => setTestResult(null), 3000)
@@ -84,6 +115,34 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
       setTestResult({ success: false, message: '接続テストに失敗しました' })
     } finally {
       setIsTesting(false)
+    }
+  }
+
+  const handleLoadCalendars = async () => {
+    if (!settings?.appId || !settings?.appSecret) {
+      setTestResult({ success: false, message: 'App IDとApp Secretを入力してください' })
+      return
+    }
+
+    setIsLoadingCalendars(true)
+    setCalendars([])
+
+    try {
+      const result = await getCalendarList(settings.appId, settings.appSecret)
+      if (result.success && result.calendars) {
+        setCalendars(result.calendars)
+        if (result.calendars.length === 0) {
+          setTestResult({ success: false, message: 'アクセス可能なカレンダーがありません' })
+        } else {
+          setTestResult({ success: true, message: `${result.calendars.length}件のカレンダーを取得しました` })
+        }
+      } else {
+        setTestResult({ success: false, message: `カレンダー取得失敗: ${result.error}` })
+      }
+    } catch (error) {
+      setTestResult({ success: false, message: 'カレンダー取得に失敗しました' })
+    } finally {
+      setIsLoadingCalendars(false)
     }
   }
 
@@ -284,6 +343,89 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
                   />
                 </div>
 
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 500, color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                    カレンダー選択
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <button
+                      onClick={handleLoadCalendars}
+                      disabled={isLoadingCalendars || !settings.appId || !settings.appSecret}
+                      style={{
+                        padding: '8px 16px',
+                        background: isLoadingCalendars ? '#d1d5db' : '#8b5cf6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        fontWeight: 500,
+                        cursor: isLoadingCalendars ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {isLoadingCalendars ? '取得中...' : '📅 カレンダー一覧を取得'}
+                    </button>
+                  </div>
+
+                  {/* カレンダー一覧 */}
+                  {calendars.length > 0 && (
+                    <div style={{
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      marginBottom: '8px',
+                    }}>
+                      {calendars.map((cal) => (
+                        <div
+                          key={cal.calendar_id}
+                          onClick={() => setSettings({ ...settings, defaultCalendarId: cal.calendar_id })}
+                          style={{
+                            padding: '10px 12px',
+                            borderBottom: '1px solid #f3f4f6',
+                            cursor: 'pointer',
+                            background: settings.defaultCalendarId === cal.calendar_id ? '#ede9fe' : 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                              {cal.summary}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
+                              {cal.type === 'primary' ? '📌 プライマリ' : cal.type === 'shared' ? '👥 共有' : cal.type}
+                              {' • '}
+                              {cal.role === 'owner' ? '所有者' : cal.role === 'writer' ? '編集可' : cal.role === 'reader' ? '閲覧のみ' : cal.role}
+                            </div>
+                          </div>
+                          {settings.defaultCalendarId === cal.calendar_id && (
+                            <span style={{ color: '#8b5cf6', fontWeight: 600 }}>✓</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 選択中のカレンダーID */}
+                  {settings.defaultCalendarId && (
+                    <div style={{
+                      padding: '8px 12px',
+                      background: '#f3f4f6',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                      color: '#6b7280',
+                      wordBreak: 'break-all',
+                    }}>
+                      <strong>選択中:</strong> {settings.defaultCalendarId}
+                    </div>
+                  )}
+
+                  <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '4px' }}>
+                    編集権限（writer/owner）のあるカレンダーを選択してください
+                  </div>
+                </div>
+
                 <button
                   onClick={handleTestConnection}
                   disabled={isTesting}
@@ -300,6 +442,114 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
                 >
                   {isTesting ? 'テスト中...' : '接続テスト'}
                 </button>
+              </div>
+
+              {/* OAuth認証セクション */}
+              <div style={{
+                background: '#fef3c7',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '16px',
+                border: '1px solid #fcd34d',
+              }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#92400e', marginBottom: '8px' }}>
+                  🔐 ユーザー認証（編集権限を取得）
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#78716c', marginBottom: '12px' }}>
+                  Larkアカウントでログインすると、作成した予定を直接編集できるようになります。
+                </div>
+
+                {oauthUser ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'white',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '0.9rem',
+                      }}>
+                        ✓
+                      </span>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                          {oauthUser.name || 'Larkユーザー'}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>
+                          連携済み
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleOAuthLogout}
+                      style={{
+                        padding: '6px 12px',
+                        background: '#fee2e2',
+                        color: '#991b1b',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      連携解除
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleOAuthLogin}
+                    disabled={!settings?.appId}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      background: !settings?.appId ? '#d1d5db' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      cursor: !settings?.appId ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span>🔗</span>
+                    <span>Larkアカウントでログイン</span>
+                  </button>
+                )}
+
+                {oauthUser && (
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginTop: '12px',
+                    fontSize: '0.8rem',
+                    color: '#374151',
+                    cursor: 'pointer',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={settings?.useOAuth || false}
+                      onChange={(e) => settings && setSettings({ ...settings, useOAuth: e.target.checked })}
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                    OAuth認証を使用（予定の編集権限を取得）
+                  </label>
+                )}
               </div>
 
               {/* テスト結果 */}

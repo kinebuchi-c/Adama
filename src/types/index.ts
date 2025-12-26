@@ -440,6 +440,13 @@ export interface LarkSettings {
   autoSync: boolean                   // 自動同期ON/OFF
   eventDurationMinutes: number        // デフォルトイベント時間（分）
   reminderMinutes: number             // リマインダー時間（分）
+  // OAuth認証フィールド
+  userAccessToken?: string            // ユーザーアクセストークン
+  userRefreshToken?: string           // リフレッシュトークン
+  userTokenExpiresAt?: number         // トークン有効期限（timestamp）
+  userOpenId?: string                 // LarkユーザーのOpen ID
+  userName?: string                   // Larkユーザー名
+  useOAuth: boolean                   // OAuth認証を使用するか
   updatedAt: Date
 }
 

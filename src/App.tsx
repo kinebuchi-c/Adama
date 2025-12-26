@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Home, CountryDetail, SchedulePage } from './pages'
+import { LarkCallbackPage } from './pages/LarkCallbackPage'
 import { SuginamiLayout } from './features/suginami/components/SuginamiLayout'
 import {
   TopPage,
@@ -38,6 +39,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/country/:countryCode" element={<CountryDetail />} />
         <Route path="/schedule" element={<SchedulePage />} />
+        <Route path="/auth/lark/callback" element={<LarkCallbackPage />} />
       </Routes>
     </BrowserRouter>
   )

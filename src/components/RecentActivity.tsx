@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { ProjectEvent, ActivityCategory } from '../types'
-import { db } from '../db/database'
-import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS } from '../types'
+import { db, deleteProjectEvent, updateProjectEvent } from '../db/database'
+import { deleteLarkEvent, updateLarkEvent, isLarkSyncEnabled } from '../services/larkService'
+import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS, EVENT_PRESETS } from '../types'
 
 interface ActivityWithProject extends ProjectEvent {
   projectName: string
@@ -12,6 +13,16 @@ interface ActivityWithProject extends ProjectEvent {
 
 export function RecentActivity() {
   const navigate = useNavigate()
+  const [editingEvent, setEditingEvent] = useState<ActivityWithProject | null>(null)
+  const [editForm, setEditForm] = useState({
+    date: '',
+    title: '',
+    description: '',
+    participants: '',
+    startTime: '10:00',
+    endTime: '11:00',
+  })
+  const [isSaving, setIsSaving] = useState(false)
 
   // useLiveQueryでデータベースの変更を自動監視
   const allEvents = useLiveQuery(() => db.projectEvents.toArray())
@@ -79,6 +90,69 @@ export function RecentActivity() {
       month: '2-digit',
       day: '2-digit',
     }).replace(/\//g, '-')
+  }
+
+  const handleDeleteEvent = async (e: React.MouseEvent, activity: ActivityWithProject) => {
+    e.stopPropagation() // クリックイベントの伝播を止める
+
+    if (!confirm(`「${activity.title}」を削除しますか？`)) return
+
+    try {
+      // Lark連携されている場合は先に削除
+      if (activity.larkEventId) {
+        await deleteLarkEvent(activity)
+      }
+
+      // ローカルDBから削除
+      await deleteProjectEvent(activity.id)
+    } catch (error) {
+      console.error('Failed to delete event:', error)
+      alert('削除に失敗しました')
+    }
+  }
+
+  const handleStartEdit = (e: React.MouseEvent, activity: ActivityWithProject) => {
+    e.stopPropagation()
+    setEditingEvent(activity)
+    setEditForm({
+      date: new Date(activity.date).toISOString().split('T')[0],
+      title: activity.title,
+      description: activity.description || '',
+      participants: activity.participants || '',
+      startTime: activity.startTime || '10:00',
+      endTime: activity.endTime || '11:00',
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingEvent || !editForm.title || !editForm.date) return
+
+    setIsSaving(true)
+    try {
+      const updatedEvent = await updateProjectEvent(editingEvent.id, {
+        date: new Date(editForm.date),
+        title: editForm.title,
+        description: editForm.description || undefined,
+        participants: editForm.participants || undefined,
+        startTime: editForm.startTime,
+        endTime: editForm.endTime,
+      })
+
+      // Lark連携されている場合は更新
+      if (updatedEvent && updatedEvent.larkEventId) {
+        const larkEnabled = await isLarkSyncEnabled()
+        if (larkEnabled) {
+          await updateLarkEvent(updatedEvent, editingEvent.projectName, getCountryName(editingEvent.countryCode))
+        }
+      }
+
+      setEditingEvent(null)
+    } catch (error) {
+      console.error('Failed to update event:', error)
+      alert('更新に失敗しました')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleDownload = () => {
@@ -251,6 +325,63 @@ export function RecentActivity() {
                     </div>
                   )}
                 </div>
+                {/* 編集・削除ボタン */}
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  <button
+                    onClick={(e) => handleStartEdit(e, activity)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '4px 6px',
+                      cursor: 'pointer',
+                      color: '#9ca3af',
+                      fontSize: '0.85rem',
+                      borderRadius: '4px',
+                      opacity: 0.6,
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                      e.currentTarget.style.color = '#3b82f6'
+                      e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.6'
+                      e.currentTarget.style.color = '#9ca3af'
+                      e.currentTarget.style.background = 'none'
+                    }}
+                    title="この予定を編集"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteEvent(e, activity)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '4px 6px',
+                      cursor: 'pointer',
+                      color: '#9ca3af',
+                      fontSize: '0.85rem',
+                      borderRadius: '4px',
+                      opacity: 0.6,
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                      e.currentTarget.style.color = '#ef4444'
+                      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.6'
+                      e.currentTarget.style.color = '#9ca3af'
+                      e.currentTarget.style.background = 'none'
+                    }}
+                    title="この予定を削除"
+                  >
+                    🗑
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -389,6 +520,233 @@ export function RecentActivity() {
           </div>
         )}
       </div>
+
+      {/* 編集モーダル */}
+      {editingEvent && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 50,
+            }}
+            onClick={() => setEditingEvent(null)}
+          />
+          <div style={{
+            position: 'fixed',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%',
+            maxWidth: '400px',
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            zIndex: 51,
+            overflow: 'hidden',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #f97316, #ea580c)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div style={{ color: 'white', fontWeight: 600, fontSize: '0.9rem' }}>
+                予定を編集
+              </div>
+              <button
+                onClick={() => setEditingEvent(null)}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* 日付 */}
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                  日付
+                </label>
+                <input
+                  type="date"
+                  value={editForm.date}
+                  onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+
+              {/* イベント名 */}
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                  イベント
+                </label>
+                <select
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                  }}
+                >
+                  <option value="">選択してください</option>
+                  {EVENT_PRESETS.map(preset => (
+                    <option key={preset} value={preset}>{preset}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 時間 */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                    開始時間
+                  </label>
+                  <input
+                    type="time"
+                    value={editForm.startTime}
+                    onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                    終了時間
+                  </label>
+                  <input
+                    type="time"
+                    value={editForm.endTime}
+                    onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 参加者 */}
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                  参加者
+                </label>
+                <input
+                  type="text"
+                  value={editForm.participants}
+                  onChange={(e) => setEditForm({ ...editForm, participants: e.target.value })}
+                  placeholder="例: 木下、田中"
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+
+              {/* メモ */}
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                  メモ
+                </label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    resize: 'none',
+                  }}
+                />
+              </div>
+
+              {/* プロジェクト情報（読み取り専用） */}
+              <div style={{
+                padding: '8px 12px',
+                background: '#f9fafb',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                color: '#6b7280',
+              }}>
+                {getCountryName(editingEvent.countryCode)} / {editingEvent.projectName}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '12px 16px',
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '8px',
+            }}>
+              <button
+                onClick={() => setEditingEvent(null)}
+                style={{
+                  padding: '8px 16px',
+                  background: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSaving || !editForm.title}
+                style={{
+                  padding: '8px 16px',
+                  background: isSaving ? '#d1d5db' : 'linear-gradient(135deg, #f97316, #ea580c)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: 500,
+                }}
+              >
+                {isSaving ? '保存中...' : '保存'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

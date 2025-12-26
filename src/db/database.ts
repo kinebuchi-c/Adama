@@ -478,6 +478,7 @@ export async function initializeLarkSettings(): Promise<LarkSettings> {
     autoSync: true,
     eventDurationMinutes: 60,
     reminderMinutes: 30,
+    useOAuth: false,
     updatedAt: new Date(),
   }
 

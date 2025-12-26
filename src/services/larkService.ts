@@ -1,31 +1,68 @@
 /**
  * Lark Calendar Integration Service
  *
- * NOTE: In production, API calls should be routed through a backend server
- * (AWS Lambda) to protect the App Secret. This client-side implementation
- * is for development/testing purposes.
+ * Supports two authentication modes:
+ * 1. Tenant Access Token (app-level) - events owned by app
+ * 2. User Access Token (OAuth) - events owned by user (editable)
  */
 
 import type { ProjectEvent, LarkTokenResponse, LarkEventResponse } from '../types'
-import { getLarkSettings, getAllLarkUserMappings, updateEventLarkSync } from '../db/database'
+import { getLarkSettings, updateEventLarkSync } from '../db/database'
+import { getValidUserToken } from './larkOAuth'
 
-// Lark API Base URLs
+// API URLs
 // In development, use Vite proxy to avoid CORS issues
-// In production, this should point to your AWS Lambda endpoint
+// In production, use AWS Lambda proxy
 const isDev = import.meta.env.DEV
-const LARK_API_BASE = isDev ? '/lark-api' : 'https://open.larksuite.com/open-apis'
+const API_URL = import.meta.env.VITE_API_URL || ''
+const LARK_API_BASE = isDev ? '/lark-api' : `${API_URL}/calendar-proxy`
 
-// Token cache
+// Token cache for tenant access token
 let tokenCache: {
   token: string
   expiresAt: number
 } | null = null
 
 /**
+ * Get appropriate access token based on settings
+ * Prefers user token if OAuth is enabled and available
+ */
+export async function getAccessToken(): Promise<{ token: string; isUserToken: boolean }> {
+  const settings = await getLarkSettings()
+
+  if (!settings?.appId || !settings?.appSecret) {
+    throw new Error('Lark API credentials not configured')
+  }
+
+  console.log('getAccessToken: useOAuth=', settings.useOAuth)
+  console.log('getAccessToken: userAccessToken exists=', !!settings.userAccessToken)
+
+  // Try user token first if OAuth is enabled
+  if (settings.useOAuth) {
+    const userToken = await getValidUserToken()
+    console.log('getAccessToken: userToken=', userToken ? userToken.substring(0, 20) + '...' : 'null')
+    if (userToken) {
+      return { token: userToken, isUserToken: true }
+    }
+  }
+
+  // Fall back to tenant access token
+  const tenantToken = await getTenantAccessToken(settings.appId, settings.appSecret)
+  return { token: tenantToken, isUserToken: false }
+}
+
+/**
  * Get tenant access token from Lark
+ * In production, this is handled by Lambda proxy, so we return a placeholder
  */
 async function getTenantAccessToken(appId: string, appSecret: string): Promise<string> {
-  // Check cache
+  // In production, Lambda handles token acquisition
+  if (!isDev) {
+    // Return a placeholder - Lambda will get the real token
+    return 'LAMBDA_PROXY'
+  }
+
+  // Check cache (development only)
   if (tokenCache && tokenCache.expiresAt > Date.now()) {
     return tokenCache.token
   }
@@ -41,7 +78,20 @@ async function getTenantAccessToken(appId: string, appSecret: string): Promise<s
     }),
   })
 
-  const data: LarkTokenResponse = await response.json()
+  if (!response.ok) {
+    const text = await response.text()
+    console.error('Token API error:', response.status, text)
+    throw new Error(`Token API error: ${response.status}`)
+  }
+
+  const text = await response.text()
+  let data: LarkTokenResponse
+  try {
+    data = JSON.parse(text)
+  } catch (e) {
+    console.error('Failed to parse token response:', text.substring(0, 200))
+    throw new Error(`Invalid token response`)
+  }
 
   if (data.code !== 0 || !data.tenant_access_token) {
     throw new Error(`Failed to get Lark token: ${data.msg}`)
@@ -59,13 +109,36 @@ async function getTenantAccessToken(appId: string, appSecret: string): Promise<s
 /**
  * Get primary calendar ID for the app
  */
-async function getPrimaryCalendarId(token: string): Promise<string | null> {
-  const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars`, {
+async function getPrimaryCalendarId(token: string, appId?: string, appSecret?: string): Promise<string | null> {
+  const headers: Record<string, string> = {}
+
+  if (token !== 'LAMBDA_PROXY') {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  // In production, we need to pass credentials via POST body
+  let url = `${LARK_API_BASE}/calendar/v4/calendars`
+  let options: RequestInit = {
     method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  })
+    headers,
+  }
+
+  // For Lambda proxy, use POST with credentials in body
+  if (!isDev && appId && appSecret) {
+    options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        app_id: appId,
+        app_secret: appSecret,
+        _method: 'GET', // Tell Lambda this is actually a GET request
+      }),
+    }
+  }
+
+  const response = await fetch(url, options)
 
   const data = await response.json()
 
@@ -82,59 +155,64 @@ async function getPrimaryCalendarId(token: string): Promise<string | null> {
 }
 
 /**
- * Get user's primary calendar ID
+ * Get all calendars accessible by the app
  */
-async function getUserPrimaryCalendarId(token: string, userId: string): Promise<string | null> {
-  const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars/primary?user_id_type=open_id`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'X-User-Id': userId,
-    },
-  })
-
-  const data = await response.json()
-
-  if (data.code !== 0) {
-    console.error('Failed to get user primary calendar:', data.msg)
-    return null
-  }
-
-  return data.data?.calendars?.[0]?.calendar?.calendar_id || null
+export interface LarkCalendar {
+  calendar_id: string
+  summary: string
+  type: string
+  role: string
 }
 
-/**
- * Get user ID from email address
- */
-async function getUserIdByEmail(token: string, email: string): Promise<string | null> {
-  const response = await fetch(`${LARK_API_BASE}/contact/v3/users/batch_get_id?user_id_type=open_id`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      emails: [email],
-    }),
-  })
+export async function getCalendarList(
+  appId: string,
+  appSecret: string
+): Promise<{ success: boolean; calendars?: LarkCalendar[]; error?: string }> {
+  try {
+    const token = await getTenantAccessToken(appId, appSecret)
 
-  const data = await response.json()
+    const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
 
-  if (data.code !== 0) {
-    console.error('Failed to get user ID:', data.msg)
-    return null
+    if (!response.ok) {
+      return { success: false, error: `API error: ${response.status}` }
+    }
+
+    const data = await response.json()
+
+    if (data.code !== 0) {
+      return { success: false, error: data.msg || 'Failed to get calendars' }
+    }
+
+    const calendars: LarkCalendar[] = (data.data?.calendar_list || []).map((c: {
+      calendar_id: string
+      summary?: string
+      type?: string
+      role?: string
+    }) => ({
+      calendar_id: c.calendar_id,
+      summary: c.summary || '(名前なし)',
+      type: c.type || 'unknown',
+      role: c.role || 'unknown',
+    }))
+
+    return { success: true, calendars }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return { success: false, error: errorMessage }
   }
-
-  const userList = data.data?.user_list
-  if (userList && userList.length > 0 && userList[0].user_id) {
-    return userList[0].user_id
-  }
-
-  return null
 }
 
 /**
  * Create calendar event in Lark
+ *
+ * Strategy: Always use tenant token to create events on app's calendar.
+ * If user is logged in via OAuth, add them as an attendee so they receive
+ * calendar invitations and can see/edit the event.
  */
 export async function createLarkEvent(
   event: ProjectEvent,
@@ -148,7 +226,14 @@ export async function createLarkEvent(
       return { success: false, error: 'Lark連携が設定されていません' }
     }
 
-    const token = await getTenantAccessToken(settings.appId, settings.appSecret)
+    // Always use tenant token for event creation
+    // User token requires calendar permissions which may not be granted
+    const token = isDev
+      ? await getTenantAccessToken(settings.appId, settings.appSecret)
+      : 'LAMBDA_PROXY'
+
+    console.log('Creating event with tenant token')
+    console.log('User logged in:', !!settings.userOpenId)
 
     // Build event time
     const eventDate = new Date(event.date)
@@ -164,48 +249,16 @@ export async function createLarkEvent(
       endDate.setMinutes(endDate.getMinutes() + settings.eventDurationMinutes)
     }
 
-    // Get attendee user IDs
-    const attendees: { type: string; user_id: string }[] = []
-    if (event.participants) {
-      const participantNames = event.participants.split(/[,、]/).map(p => p.trim()).filter(p => p)
-      const mappings = await getAllLarkUserMappings()
-
-      for (const name of participantNames) {
-        const mapping = mappings.find(m => m.displayName === name)
-        if (mapping) {
-          let userId = mapping.larkUserId
-          if (!userId && mapping.larkEmail) {
-            userId = await getUserIdByEmail(token, mapping.larkEmail) || undefined
-          }
-          if (userId) {
-            attendees.push({ type: 'user', user_id: userId })
-          }
-        }
-      }
-    }
-
-    // Get calendar ID - try to use the owner's calendar first
-    let calendarId: string | undefined = settings.defaultCalendarId
-    const ownerEmail = 'kinebuchi@customercloud.ai'
-    const ownerUserId = await getUserIdByEmail(token, ownerEmail)
-
-    if (!calendarId && ownerUserId) {
-      // Try to get owner's primary calendar
-      const ownerCalendarId = await getUserPrimaryCalendarId(token, ownerUserId)
-      if (ownerCalendarId) {
-        calendarId = ownerCalendarId
-        console.log('Using owner calendar:', calendarId)
-      }
-    }
-
+    // Get calendar ID - use shared calendar or app's primary calendar
+    let calendarId = settings.defaultCalendarId
     if (!calendarId) {
-      // Fallback to app's primary calendar
-      const primaryCalendarId = await getPrimaryCalendarId(token)
+      const primaryCalendarId = await getPrimaryCalendarId(token, settings.appId, settings.appSecret)
       if (!primaryCalendarId) {
-        return { success: false, error: 'カレンダーが見つかりません。Lark設定でカレンダーIDを指定してください。' }
+        return { success: false, error: 'カレンダーが見つかりません。Lark設定で共有カレンダーIDを指定してください。' }
       }
       calendarId = primaryCalendarId
     }
+    console.log('Using calendar:', calendarId)
 
     // Build event title with country name if available
     const titleParts: string[] = []
@@ -214,29 +267,67 @@ export async function createLarkEvent(
     titleParts.push(event.title)
     const eventSummary = titleParts.join(' / ')
 
+    // Build request body
+    const requestBody: Record<string, unknown> = {
+      summary: eventSummary,
+      description: event.description || '',
+      start_time: {
+        timestamp: Math.floor(eventDate.getTime() / 1000).toString(),
+      },
+      end_time: {
+        timestamp: Math.floor(endDate.getTime() / 1000).toString(),
+      },
+      reminders: settings.reminderMinutes > 0 ? [{
+        minutes: settings.reminderMinutes,
+      }] : [],
+    }
+
+    // If user is logged in via OAuth, add them as attendee
+    // This allows them to see the event in their calendar as an invitation
+    if (settings.userOpenId) {
+      requestBody.attendees = [{
+        type: 'user',
+        user_id: settings.userOpenId,
+        is_optional: false,
+      }]
+      console.log('Adding user as attendee:', settings.userOpenId)
+    }
+
+    // In production, include credentials for Lambda proxy
+    if (!isDev) {
+      requestBody.app_id = settings.appId
+      requestBody.app_secret = settings.appSecret
+    }
+
     // Create event
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (isDev) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
     const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars/${calendarId}/events?user_id_type=open_id`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        summary: eventSummary,
-        description: event.description || '',
-        start_time: {
-          timestamp: Math.floor(eventDate.getTime() / 1000).toString(),
-        },
-        end_time: {
-          timestamp: Math.floor(endDate.getTime() / 1000).toString(),
-        },
-        reminders: settings.reminderMinutes > 0 ? [{
-          minutes: settings.reminderMinutes,
-        }] : [],
-      }),
+      headers,
+      body: JSON.stringify(requestBody),
     })
 
-    const data: LarkEventResponse = await response.json()
+    // Check if response is OK
+    if (!response.ok) {
+      const text = await response.text()
+      console.error('Lark API error response:', response.status, text)
+      throw new Error(`API error: ${response.status} - ${text.substring(0, 100)}`)
+    }
+
+    const text = await response.text()
+    let data: LarkEventResponse
+    try {
+      data = JSON.parse(text)
+    } catch (e) {
+      console.error('Failed to parse Lark response:', text.substring(0, 200))
+      throw new Error(`Invalid JSON response: ${text.substring(0, 50)}`)
+    }
 
     if (data.code !== 0 || !data.data?.event?.event_id) {
       throw new Error(data.msg || 'Failed to create event')
@@ -244,21 +335,6 @@ export async function createLarkEvent(
 
     const larkEventId = data.data.event.event_id
     const larkCalendarId = data.data.event.organizer_calendar_id
-
-    // Add attendees if any (owner is already the organizer, no need to add)
-    if (attendees.length > 0) {
-      await fetch(`${LARK_API_BASE}/calendar/v4/calendars/${calendarId}/events/${larkEventId}/attendees?user_id_type=open_id`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          attendees,
-          need_notification: true,
-        }),
-      })
-    }
 
     // Update local event with Lark info
     await updateEventLarkSync(event.id, {
