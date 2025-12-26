@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLiveQuery } from 'dexie-react-hooks'
 import type { ProjectEvent } from '../types'
 import { db } from '../db/database'
 import { COUNTRY_NAMES } from '../types'
@@ -9,80 +10,66 @@ interface ActivityWithProject extends ProjectEvent {
   countryCode: string
 }
 
-interface PersonActivities {
-  name: string
-  scheduled: ActivityWithProject[]
-  completed: ActivityWithProject[]
-}
-
 export function PersonSchedule() {
   const navigate = useNavigate()
-  const [personActivities, setPersonActivities] = useState<PersonActivities[]>([])
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    loadPersonActivities()
-  }, [])
+  // Use live query to automatically update when database changes
+  const allEvents = useLiveQuery(() => db.projectEvents.toArray(), [])
+  const projects = useLiveQuery(() => db.projects.toArray(), [])
 
-  const loadPersonActivities = async () => {
-    try {
-      const allEvents = await db.projectEvents.toArray()
-      const projects = await db.projects.toArray()
-      const projectMap = new Map(projects.map(p => [p.id, p]))
+  const personActivities = useMemo(() => {
+    if (!allEvents || !projects) return []
 
-      // 全アクティビティをプロジェクト情報付きで取得
-      const activitiesWithProject: ActivityWithProject[] = allEvents
-        .map(event => {
-          const project = projectMap.get(event.projectId)
-          if (!project) return null
-          return {
-            ...event,
-            projectName: project.name,
-            countryCode: project.countryCode,
-          }
-        })
-        .filter((a): a is ActivityWithProject => a !== null)
+    const projectMap = new Map(projects.map(p => [p.id, p]))
 
-      // 参加者ごとにグループ化
-      const personMap = new Map<string, { scheduled: ActivityWithProject[]; completed: ActivityWithProject[] }>()
-
-      activitiesWithProject.forEach(activity => {
-        if (!activity.participants) return
-
-        // カンマや「、」で区切られた複数の参加者を処理
-        const participants = activity.participants.split(/[,、]/).map(p => p.trim()).filter(p => p)
-
-        participants.forEach(person => {
-          if (!personMap.has(person)) {
-            personMap.set(person, { scheduled: [], completed: [] })
-          }
-
-          const personData = personMap.get(person)!
-          if (activity.eventType === 'scheduled') {
-            personData.scheduled.push(activity)
-          } else {
-            personData.completed.push(activity)
-          }
-        })
+    // 全アクティビティをプロジェクト情報付きで取得
+    const activitiesWithProject: ActivityWithProject[] = allEvents
+      .map(event => {
+        const project = projectMap.get(event.projectId)
+        if (!project) return null
+        return {
+          ...event,
+          projectName: project.name,
+          countryCode: project.countryCode,
+        }
       })
+      .filter((a): a is ActivityWithProject => a !== null)
 
-      // 配列に変換してソート（予定が多い人順）
-      const result: PersonActivities[] = Array.from(personMap.entries())
-        .map(([name, data]) => ({
-          name,
-          scheduled: data.scheduled.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-          completed: data.completed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-        }))
-        .sort((a, b) => b.scheduled.length - a.scheduled.length || b.completed.length - a.completed.length)
+    // 参加者ごとにグループ化
+    const personMap = new Map<string, { scheduled: ActivityWithProject[]; completed: ActivityWithProject[] }>()
 
-      setPersonActivities(result)
-    } catch (error) {
-      console.error('Failed to load person activities:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    activitiesWithProject.forEach(activity => {
+      if (!activity.participants) return
+
+      // カンマや「、」で区切られた複数の参加者を処理
+      const participants = activity.participants.split(/[,、]/).map(p => p.trim()).filter(p => p)
+
+      participants.forEach(person => {
+        if (!personMap.has(person)) {
+          personMap.set(person, { scheduled: [], completed: [] })
+        }
+
+        const personData = personMap.get(person)!
+        if (activity.eventType === 'scheduled') {
+          personData.scheduled.push(activity)
+        } else {
+          personData.completed.push(activity)
+        }
+      })
+    })
+
+    // 配列に変換してソート（予定が多い人順）
+    return Array.from(personMap.entries())
+      .map(([name, data]) => ({
+        name,
+        scheduled: data.scheduled.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+        completed: data.completed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      }))
+      .sort((a, b) => b.scheduled.length - a.scheduled.length || b.completed.length - a.completed.length)
+  }, [allEvents, projects])
+
+  const isLoading = allEvents === undefined || projects === undefined
 
   const formatDate = (date: Date) => {
     const d = new Date(date)
