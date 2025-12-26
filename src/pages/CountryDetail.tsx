@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { ProjectList } from '../components/Project'
 import { useProjectStore } from '../stores/projectStore'
-import { useBaobabStore } from '../stores/baobabStore'
+import { useNeemStore } from '../stores/neemStore'
 import { useTerritoryStore } from '../stores/territoryStore'
 import type { Project, ProjectStatus, DiplomacyPhase, ProjectEvent, CountryContact, ContactPerson } from '../types'
 import { COUNTRY_NAMES, COUNTRY_INFO } from '../types'
@@ -14,7 +14,7 @@ export function CountryDetail() {
   const location = useLocation()
   const navigate = useNavigate()
   const { projects, loadProjects, addProject, updateProject, deleteProject, updateStatus } = useProjectStore()
-  const { refreshGrowth } = useBaobabStore()
+  const { refreshGrowth } = useNeemStore()
   const { addCity, cities } = useTerritoryStore()
 
   const [countryProjects, setCountryProjects] = useState<Project[]>([])
@@ -27,6 +27,7 @@ export function CountryDetail() {
     japanAmbassador: { name: '', notes: '' } as ContactPerson,
     additionalContacts: [] as Array<{ role: string; name: string; notes?: string }>,
   })
+  const [showDetailedInfo, setShowDetailedInfo] = useState(false)
 
   // 国名の取得
   const countryName = (location.state as { countryName?: string })?.countryName
@@ -340,6 +341,76 @@ export function CountryDetail() {
               <InfoItem icon="💰" label="通貨" value={countryInfo.currency} />
               <InfoItem icon="🕐" label="時差" value={countryInfo.timezone} />
             </div>
+            {(countryInfo.religions || countryInfo.ethnicities || countryInfo.industries || countryInfo.ageStructure || countryInfo.populationGrowth) && (
+              <>
+                <button
+                  onClick={() => setShowDetailedInfo(!showDetailedInfo)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginTop: '12px',
+                    padding: '8px 12px',
+                    background: showDetailedInfo ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    color: showDetailedInfo ? 'white' : '#4b5563',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <span style={{
+                    transform: showDetailedInfo ? 'rotate(90deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s',
+                  }}>▶</span>
+                  詳細情報（宗教・民族・産業・人口構成）
+                </button>
+                {showDetailedInfo && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                  }}>
+                    {(countryInfo.religions || countryInfo.ethnicities || countryInfo.industries) && (
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                        gap: '12px',
+                        marginBottom: (countryInfo.ageStructure || countryInfo.populationGrowth) ? '12px' : '0',
+                      }}>
+                        {countryInfo.religions && (
+                          <InfoListItem icon="🛐" label="宗教" items={countryInfo.religions} />
+                        )}
+                        {countryInfo.ethnicities && (
+                          <InfoListItem icon="👨‍👩‍👧‍👦" label="民族" items={countryInfo.ethnicities} />
+                        )}
+                        {countryInfo.industries && (
+                          <InfoListItem icon="🏭" label="主要産業" items={countryInfo.industries} />
+                        )}
+                      </div>
+                    )}
+                    {(countryInfo.ageStructure || countryInfo.populationGrowth) && (
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                        gap: '12px',
+                      }}>
+                        {countryInfo.ageStructure && (
+                          <InfoItem icon="📊" label="年齢構成" value={countryInfo.ageStructure} />
+                        )}
+                        {countryInfo.populationGrowth && (
+                          <InfoItem icon="📈" label="人口増加率" value={countryInfo.populationGrowth} />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -853,6 +924,31 @@ function InfoItem({ icon, label, value }: { icon: string; label: string; value: 
       </div>
       <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1f2937' }}>
         {value}
+      </div>
+    </div>
+  )
+}
+
+function InfoListItem({ icon, label, items }: { icon: string; label: string; items: string[] }) {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+      borderRadius: '10px',
+      padding: '12px',
+    }}>
+      <div style={{ fontSize: '0.7rem', color: '#6b7280', marginBottom: '6px' }}>
+        {icon} {label}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {items.map((item, index) => (
+          <div key={index} style={{
+            fontSize: '0.8rem',
+            fontWeight: index === 0 ? 600 : 500,
+            color: index === 0 ? '#1f2937' : '#4b5563',
+          }}>
+            {index + 1}. {item}
+          </div>
+        ))}
       </div>
     </div>
   )

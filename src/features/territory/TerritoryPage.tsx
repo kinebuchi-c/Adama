@@ -2,15 +2,15 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTerritoryStore, formatArea } from '../../stores/territoryStore'
 import { useProjectStore } from '../../stores/projectStore'
-import { useBaobabStore } from '../../stores/baobabStore'
+import { useNeemStore } from '../../stores/neemStore'
 import { TerritoryMap } from './components/TerritoryMap'
-import { BaobabTree } from '../../components/Baobab/BaobabTree'
+import { NeemTree } from '../../components/Neem/NeemTree'
 
 export function TerritoryPage() {
   const navigate = useNavigate()
   const { cities, deleteMode, toggleDeleteMode, resetAll, getTotalArea } = useTerritoryStore()
   const { projects, loadProjects } = useProjectStore()
-  const { loadGrowth } = useBaobabStore()
+  const { loadGrowth } = useNeemStore()
   const [toast, setToast] = useState<{ message: string; icon: string; show: boolean }>({
     message: '',
     icon: '✅',
@@ -232,9 +232,9 @@ export function TerritoryPage() {
           </div>
         )}
 
-        {/* Baobab Tree */}
+        {/* Neem Tree */}
         <div style={{ marginBottom: '12px' }}>
-          <BaobabTree />
+          <NeemTree />
         </div>
 
         {/* City List */}

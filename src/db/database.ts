@@ -190,10 +190,13 @@ export async function deleteProjectEvent(id: string): Promise<void> {
   await db.projectEvents.delete(id)
 }
 
-// バオバブヘルパー関数
-export async function getBaobabGrowth(): Promise<BaobabGrowth | undefined> {
+// ニーム成長ヘルパー関数 (旧バオバブ - データベース互換性のためbaobabGrowthテーブルを使用)
+export async function getNeemGrowth(): Promise<BaobabGrowth | undefined> {
   return db.baobabGrowth.get('main')
 }
+
+// 後方互換性のためのエイリアス
+export const getBaobabGrowth = getNeemGrowth
 
 export async function addGrowthPoints(points: number): Promise<BaobabGrowth> {
   const growth = await getBaobabGrowth()

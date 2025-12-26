@@ -34,7 +34,7 @@ function App() {
           <Route path="help" element={<HelpPage />} />
         </Route>
 
-        {/* Original Baobab World Map Routes */}
+        {/* Customer Cloud International Project Dashboard Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/country/:countryCode" element={<CountryDetail />} />
         <Route path="/schedule" element={<SchedulePage />} />

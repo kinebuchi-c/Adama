@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTerritoryStore, forwardGeocode, formatArea } from '../../../stores/territoryStore'
-import { useBaobabStore } from '../../../stores/baobabStore'
+import { useNeemStore } from '../../../stores/neemStore'
 import { getCityDisplayName } from '../../../types/territory'
 import type { City } from '../../../types/territory'
-import { BaobabTree } from '../../../components/Baobab/BaobabTree'
+import { NeemTree } from '../../../components/Neem/NeemTree'
 
 interface AreaPanelProps {
   onToast: (message: string, icon: string) => void
@@ -11,7 +11,7 @@ interface AreaPanelProps {
 
 export function AreaPanel({ onToast }: AreaPanelProps) {
   const { cities, addCity, getTotalArea, searchCities } = useTerritoryStore()
-  const { loadGrowth, refreshGrowth } = useBaobabStore()
+  const { loadGrowth, refreshGrowth } = useNeemStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Omit<City, 'id'>[]>([])
   const [showResults, setShowResults] = useState(false)
@@ -19,7 +19,7 @@ export function AreaPanel({ onToast }: AreaPanelProps) {
 
   const totalArea = getTotalArea()
 
-  // Load baobab on mount
+  // Load neem on mount
   useEffect(() => {
     loadGrowth()
   }, [loadGrowth])
@@ -190,9 +190,9 @@ export function AreaPanel({ onToast }: AreaPanelProps) {
         <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>km²</div>
       </div>
 
-      {/* Baobab Tree */}
+      {/* Neem Tree */}
       <div style={{ marginBottom: '16px' }}>
-        <BaobabTree />
+        <NeemTree />
         <div style={{
           marginTop: '8px',
           padding: '8px 12px',

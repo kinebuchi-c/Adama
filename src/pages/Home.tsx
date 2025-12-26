@@ -1,30 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { WorldMap, MapLegend } from '../components/WorldMap'
-import { BaobabTree } from '../components/Baobab'
+import { NeemTree } from '../components/Neem'
 import { CountrySearch } from '../components/CountrySearch'
 import { ITNewsPanel } from '../components/ITNewsPanel'
 import { DiplomacyTips } from '../components/DiplomacyTips'
 import { RecentActivity } from '../components/RecentActivity'
+import { PersonSchedule } from '../components/PersonSchedule'
 import { useProjectStore } from '../stores/projectStore'
-import { useBaobabStore } from '../stores/baobabStore'
-import { useTerritoryStore, formatArea } from '../stores/territoryStore'
-
-// 人口をフォーマット（億・万単位）
-function formatPopulation(pop: number): string {
-  if (pop >= 100000000) {
-    return `${(pop / 100000000).toFixed(1)}億人`
-  } else if (pop >= 10000) {
-    return `${Math.round(pop / 10000)}万人`
-  }
-  return `${pop.toLocaleString()}人`
-}
+import { useNeemStore } from '../stores/neemStore'
+import { useTerritoryStore } from '../stores/territoryStore'
 
 export function Home() {
   const navigate = useNavigate()
   const { loadProjects, projects } = useProjectStore()
-  const { loadGrowth } = useBaobabStore()
-  const { cities, getTotalArea, getTotalPopulation } = useTerritoryStore()
+  const { loadGrowth } = useNeemStore()
+  const { getTotalArea } = useTerritoryStore()
   const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string } | null>(null)
 
   useEffect(() => {
@@ -42,11 +33,11 @@ export function Home() {
     }
   }, [selectedCountry, navigate])
 
-  const totalProjects = projects.length
+  const preparingProjects = projects.filter(p => p.status === 'preparing' || p.status === 'not_started').length
+  const inProgressProjects = projects.filter(p => p.status === 'in_progress').length
   const completedProjects = projects.filter(p => p.status === 'completed').length
   const countriesWithProjects = new Set(projects.map(p => p.countryCode)).size
   const totalArea = getTotalArea()
-  const totalPopulation = getTotalPopulation()
   const selectedCountryProjects = selectedCountry
     ? projects.filter(p => p.countryCode === selectedCountry.code)
     : []
@@ -68,14 +59,14 @@ export function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '2rem' }}>🌍</span>
             <h1 style={{
-              fontSize: '1.5rem',
+              fontSize: '1.3rem',
               fontWeight: 700,
               background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               margin: 0,
             }}>
-              Baobab World Map
+              Customer Cloud International Project Dashboard
             </h1>
           </div>
           <div style={{ width: '280px' }}>
@@ -93,11 +84,18 @@ export function Home() {
           marginBottom: '20px',
         }}>
           <StatCard
-            value={totalProjects}
-            label="プロジェクト"
+            value={preparingProjects}
+            label="準備中"
             icon="📋"
             gradient="linear-gradient(135deg, #fce7f3, #fbcfe8)"
             color="#db2777"
+          />
+          <StatCard
+            value={inProgressProjects}
+            label="進行中"
+            icon="🚀"
+            gradient="linear-gradient(135deg, #dbeafe, #bfdbfe)"
+            color="#2563eb"
           />
           <StatCard
             value={completedProjects}
@@ -110,21 +108,13 @@ export function Home() {
             value={countriesWithProjects}
             label="活動国"
             icon="🌏"
-            gradient="linear-gradient(135deg, #dbeafe, #bfdbfe)"
-            color="#2563eb"
-          />
-          <StatCard
-            value={cities.length > 0 ? `${formatArea(totalArea)} km²` : '0 km²'}
-            label="領土面積"
-            icon="📐"
             gradient="linear-gradient(135deg, #fef3c7, #fde68a)"
             color="#d97706"
-            isText
           />
           <StatCard
-            value={totalPopulation > 0 ? formatPopulation(totalPopulation) : '0'}
-            label="領土人口"
-            icon="👥"
+            value={totalArea > 0 ? `${(totalArea / 150000000 * 100).toFixed(2)}%` : '0%'}
+            label="世界進出"
+            icon="🌍"
             gradient="linear-gradient(135deg, #e0e7ff, #c7d2fe)"
             color="#4f46e5"
             isText
@@ -232,6 +222,9 @@ export function Home() {
             {/* 直近の活動履歴 */}
             <RecentActivity />
 
+            {/* 担当者別予定 */}
+            <PersonSchedule />
+
             {/* 使い方 */}
             <div style={{
               background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
@@ -264,7 +257,7 @@ export function Home() {
                 </li>
                 <li style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '1rem' }}>🌳</span>
-                  <span>プロジェクト完了でバオバブが成長</span>
+                  <span>プロジェクト完了でニームが成長</span>
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '1rem' }}>🎨</span>
@@ -273,7 +266,7 @@ export function Home() {
               </ul>
             </div>
 
-            {/* バオバブの木 */}
+            {/* ニームの木 */}
             <div style={{
               background: 'white',
               borderRadius: '20px',
@@ -281,7 +274,7 @@ export function Home() {
               boxShadow: '0 4px 20px rgba(139, 92, 246, 0.1)',
               border: '1px solid rgba(139, 92, 246, 0.1)',
             }}>
-              <BaobabTree />
+              <NeemTree />
             </div>
           </div>
         </div>

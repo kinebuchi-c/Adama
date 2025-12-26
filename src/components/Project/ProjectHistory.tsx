@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { ProjectEvent, EventType, DiplomacyPhase, ProjectStatus } from '../../types'
 import { EVENT_PRESETS, EVENT_AUTO_UPDATE, DIPLOMACY_PHASE_LABELS, STATUS_LABELS } from '../../types'
-import { getProjectEvents, addProjectEvent, deleteProjectEvent } from '../../db/database'
+import { getProjectEvents, addProjectEvent, deleteProjectEvent, updateProjectEvent } from '../../db/database'
 
 interface ProjectHistoryProps {
   projectId: string
@@ -24,6 +24,7 @@ export function ProjectHistory({
 }: ProjectHistoryProps) {
   const [events, setEvents] = useState<ProjectEvent[]>([])
   const [isAdding, setIsAdding] = useState(false)
+  const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [autoSync, setAutoSync] = useState(true)
   const [newEvent, setNewEvent] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -160,6 +161,55 @@ export function ProjectHistory({
       await deleteProjectEvent(eventId)
       await loadEvents()
     }
+  }
+
+  const handleStartEdit = (event: ProjectEvent) => {
+    setEditingEventId(event.id)
+    setNewEvent({
+      date: new Date(event.date).toISOString().split('T')[0],
+      title: event.title,
+      description: event.description || '',
+      imageUrl: event.imageUrl || '',
+      eventType: event.eventType || 'completed',
+      participants: event.participants || '',
+    })
+    setIsAdding(false)
+  }
+
+  const handleUpdateEvent = async () => {
+    if (!editingEventId || !newEvent.title || !newEvent.date) return
+
+    await updateProjectEvent(editingEventId, {
+      date: new Date(newEvent.date),
+      title: newEvent.title,
+      description: newEvent.description || undefined,
+      imageUrl: newEvent.imageUrl || undefined,
+      eventType: newEvent.eventType,
+      participants: newEvent.participants || undefined,
+    })
+
+    setEditingEventId(null)
+    setNewEvent({
+      date: new Date().toISOString().split('T')[0],
+      title: '',
+      description: '',
+      imageUrl: '',
+      eventType: 'completed',
+      participants: '',
+    })
+    await loadEvents()
+  }
+
+  const handleCancelEdit = () => {
+    setEditingEventId(null)
+    setNewEvent({
+      date: new Date().toISOString().split('T')[0],
+      title: '',
+      description: '',
+      imageUrl: '',
+      eventType: 'completed',
+      participants: '',
+    })
   }
 
   const formatDate = (date: Date) => {
@@ -305,7 +355,7 @@ export function ProjectHistory({
           padding: '16px 20px',
         }}>
           {/* 追加ボタン */}
-          {!isAdding && (
+          {!isAdding && !editingEventId && (
             <button
               onClick={() => setIsAdding(true)}
               style={{
@@ -328,14 +378,28 @@ export function ProjectHistory({
             </button>
           )}
 
-          {/* 追加フォーム */}
-          {isAdding && (
+          {/* 追加・編集フォーム */}
+          {(isAdding || editingEventId) && (
             <div style={{
-              background: '#f9fafb',
+              background: editingEventId ? '#fef3c7' : '#f9fafb',
               borderRadius: '12px',
               padding: '16px',
               marginBottom: '16px',
+              border: editingEventId ? '1px solid #fcd34d' : 'none',
             }}>
+              {editingEventId && (
+                <div style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  color: '#92400e',
+                  marginBottom: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  ✏️ イベントを編集中
+                </div>
+              )}
               {/* 種別選択 */}
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
@@ -596,7 +660,7 @@ export function ProjectHistory({
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                  onClick={() => setIsAdding(false)}
+                  onClick={editingEventId ? handleCancelEdit : () => setIsAdding(false)}
                   style={{
                     flex: 1,
                     padding: '10px',
@@ -611,12 +675,14 @@ export function ProjectHistory({
                   キャンセル
                 </button>
                 <button
-                  onClick={handleAddEvent}
+                  onClick={editingEventId ? handleUpdateEvent : handleAddEvent}
                   disabled={!newEvent.title || !newEvent.date}
                   style={{
                     flex: 1,
                     padding: '10px',
-                    background: newEvent.title && newEvent.date ? '#3b82f6' : '#d1d5db',
+                    background: newEvent.title && newEvent.date
+                      ? (editingEventId ? '#f59e0b' : '#3b82f6')
+                      : '#d1d5db',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
@@ -624,7 +690,7 @@ export function ProjectHistory({
                     cursor: newEvent.title && newEvent.date ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  追加
+                  {editingEventId ? '更新' : '追加'}
                 </button>
               </div>
             </div>
@@ -715,20 +781,36 @@ export function ProjectHistory({
                           {formatDate(event.date)}
                         </span>
                       </div>
-                      <button
-                        onClick={() => handleDeleteEvent(event.id)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#9ca3af',
-                          fontSize: '0.8rem',
-                          padding: '2px',
-                        }}
-                        title="削除"
-                      >
-                        🗑️
-                      </button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          onClick={() => handleStartEdit(event)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#9ca3af',
+                            fontSize: '0.8rem',
+                            padding: '2px',
+                          }}
+                          title="編集"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#9ca3af',
+                            fontSize: '0.8rem',
+                            padding: '2px',
+                          }}
+                          title="削除"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
                     <div style={{
                       fontSize: '0.9rem',

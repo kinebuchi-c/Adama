@@ -30,7 +30,7 @@ export function Header() {
           >
             🌳
           </motion.span>
-          <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#1f2937' }}>Baobab World Map</span>
+          <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#1f2937' }}>Customer Cloud International Project Dashboard</span>
         </Link>
 
         {!isHome && (
