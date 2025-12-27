@@ -20,7 +20,6 @@ export function Home() {
   const { loadProjects, projects } = useProjectStore()
   const { loadGrowth } = useNeemStore()
   const { getTotalArea } = useTerritoryStore()
-  const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string } | null>(null)
   const [showLarkSettings, setShowLarkSettings] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState<FilterType>(null)
 
@@ -30,23 +29,14 @@ export function Home() {
   }, [loadProjects, loadGrowth])
 
   const handleCountryClick = useCallback((countryCode: string, countryName: string) => {
-    setSelectedCountry({ code: countryCode, name: countryName })
-  }, [])
-
-  const handleViewProjects = useCallback(() => {
-    if (selectedCountry) {
-      navigate(`/country/${selectedCountry.code}`, { state: { countryName: selectedCountry.name } })
-    }
-  }, [selectedCountry, navigate])
+    navigate(`/country/${countryCode}`, { state: { countryName } })
+  }, [navigate])
 
   const preparingProjectsList = projects.filter(p => p.status === 'preparing' || p.status === 'not_started')
   const inProgressProjectsList = projects.filter(p => p.status === 'in_progress')
   const completedProjectsList = projects.filter(p => p.status === 'completed')
   const countriesWithProjectsList = Array.from(new Set(projects.map(p => p.countryCode)))
   const totalArea = getTotalArea()
-  const selectedCountryProjects = selectedCountry
-    ? projects.filter(p => p.countryCode === selectedCountry.code)
-    : []
 
   const getFilteredData = () => {
     switch (selectedFilter) {
@@ -94,7 +84,7 @@ export function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '280px' }}>
               <CountrySearch onSelect={(code, name) => {
-                setSelectedCountry({ code, name })
+                navigate(`/country/${code}`, { state: { countryName: name } })
               }} />
             </div>
             <button
@@ -315,73 +305,6 @@ export function Home() {
 
           {/* 右：サイドパネル */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* 選択した国 */}
-            {selectedCountry && (
-              <div style={{
-                background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)',
-                borderRadius: '20px',
-                padding: '16px',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '12px',
-                }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 600, color: '#065f46' }}>
-                    🌍 {selectedCountry.name}
-                  </span>
-                  <button
-                    onClick={() => setSelectedCountry(null)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '1rem',
-                      color: '#6b7280',
-                      padding: '4px',
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: '#047857',
-                  marginBottom: '12px',
-                }}>
-                  {selectedCountryProjects.length} プロジェクト
-                </div>
-                <button
-                  onClick={handleViewProjects}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
-                  }}
-                >
-                  プロジェクト管理 →
-                </button>
-              </div>
-            )}
-
             {/* 直近の活動履歴 */}
             <RecentActivity />
 
