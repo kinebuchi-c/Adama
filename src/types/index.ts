@@ -105,6 +105,94 @@ export interface ContactPerson {
   endDate?: string             // 退任日（空なら現任）
 }
 
+// ========================================
+// マスターデータ: 関係者・機関
+// ========================================
+
+// 社内スタッフ（担当者）
+export interface StaffMember {
+  id: string
+  name: string                 // 名前
+  email?: string               // メールアドレス
+  department?: string          // 部署
+  notes?: string               // 備考
+  isActive: boolean            // アクティブフラグ
+  createdAt: Date
+}
+
+// 機関種別
+export type OrganizationType =
+  | 'introducer'      // 紹介機関（太平洋諸島センターなど）
+  | 'government'      // 政府機関
+  | 'embassy'         // 大使館
+  | 'company'         // 企業
+  | 'ngo'             // NGO/NPO
+  | 'international'   // 国際機関
+  | 'other'           // その他
+
+// 機関種別ラベル
+export const ORGANIZATION_TYPE_LABELS: Record<OrganizationType, string> = {
+  introducer: '紹介機関',
+  government: '政府機関',
+  embassy: '大使館',
+  company: '企業',
+  ngo: 'NGO/NPO',
+  international: '国際機関',
+  other: 'その他',
+}
+
+// 機関（紹介機関・関与機関など）
+export interface Organization {
+  id: string
+  name: string                 // 機関名
+  type: OrganizationType       // 機関種別
+  countryCodes?: string[]      // 関連国コード（複数可）
+  contactPerson?: string       // 窓口担当者名
+  contactEmail?: string        // 連絡先メール
+  contactPhone?: string        // 連絡先電話
+  address?: string             // 住所
+  website?: string             // Webサイト
+  notes?: string               // 備考
+  isActive: boolean            // アクティブフラグ
+  createdAt: Date
+}
+
+// 外部コンタクト（紹介者など個人）
+export interface ExternalContact {
+  id: string
+  name: string                 // 名前
+  organizationId?: string      // 所属機関ID（Organizationへの参照）
+  organizationName?: string    // 所属機関名（手入力用）
+  title?: string               // 役職
+  email?: string               // メールアドレス
+  phone?: string               // 電話番号
+  countryCodes?: string[]      // 関連国コード（複数可）
+  notes?: string               // 備考
+  isActive: boolean            // アクティブフラグ
+  createdAt: Date
+}
+
+// プロジェクトとの関連（リンク）
+export type ProjectRelationType =
+  | 'assignee'        // 担当者
+  | 'introducer_org'  // 紹介機関
+  | 'introducer'      // 紹介者（個人）
+  | 'partner_org'     // パートナー機関
+  | 'partner'         // パートナー（個人）
+  | 'other'           // その他
+
+// プロジェクトリンク
+export interface ProjectLink {
+  id: string
+  projectId: string
+  relationType: ProjectRelationType
+  staffId?: string             // StaffMemberへの参照
+  organizationId?: string      // Organizationへの参照
+  contactId?: string           // ExternalContactへの参照
+  notes?: string               // 備考
+  createdAt: Date
+}
+
 // 国の連絡先情報
 export interface CountryContact {
   id: string

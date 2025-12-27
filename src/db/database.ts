@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Project, BaobabGrowth, ProjectEvent, CountryContact, LarkSettings, LarkUserMapping } from '../types'
+import type { Project, BaobabGrowth, ProjectEvent, CountryContact, LarkSettings, LarkUserMapping, StaffMember, Organization, ExternalContact, ProjectLink } from '../types'
 import type {
   SuginamiUserProfile,
   SuginamiTask,
@@ -14,6 +14,10 @@ export class BaobabDatabase extends Dexie {
   countryContacts!: Table<CountryContact>
   larkSettings!: Table<LarkSettings>
   larkUserMappings!: Table<LarkUserMapping>
+  staffMembers!: Table<StaffMember>
+  organizations!: Table<Organization>
+  externalContacts!: Table<ExternalContact>
+  projectLinks!: Table<ProjectLink>
   suginamiUserProfile!: Table<SuginamiUserProfile>
   suginamiTasks!: Table<SuginamiTask>
   suginamiDocuments!: Table<SuginamiDocument>
@@ -107,6 +111,24 @@ export class BaobabDatabase extends Dexie {
       countryContacts: 'id, countryCode, updatedAt',
       larkSettings: 'id',
       larkUserMappings: 'id, displayName, larkEmail',
+      suginamiUserProfile: 'id',
+      suginamiTasks: 'id, templateId, category, status, priority, order',
+      suginamiDocuments: 'id, type, status, linkedTaskId',
+      languagePreference: 'id',
+    })
+
+    // v8: 関係者・機関マスターデータ追加
+    this.version(8).stores({
+      projects: 'id, countryCode, status, diplomacyPhase, createdAt, updatedAt',
+      projectEvents: 'id, projectId, date, eventType, larkSyncStatus, createdAt',
+      baobabGrowth: 'id',
+      countryContacts: 'id, countryCode, updatedAt',
+      larkSettings: 'id',
+      larkUserMappings: 'id, displayName, larkEmail',
+      staffMembers: 'id, name, isActive, createdAt',
+      organizations: 'id, name, type, isActive, createdAt',
+      externalContacts: 'id, name, organizationId, isActive, createdAt',
+      projectLinks: 'id, projectId, relationType, staffId, organizationId, contactId, createdAt',
       suginamiUserProfile: 'id',
       suginamiTasks: 'id, templateId, category, status, priority, order',
       suginamiDocuments: 'id, type, status, linkedTaskId',
@@ -539,4 +561,158 @@ export async function updateEventLarkSync(
     ...syncData,
     larkLastSyncAt: new Date(),
   })
+}
+
+// ===== 関係者・機関マスターデータヘルパー関数 =====
+
+// スタッフメンバー（社内担当者）
+export async function getAllStaffMembers(): Promise<StaffMember[]> {
+  return db.staffMembers.where('isActive').equals(1).toArray()
+}
+
+export async function getAllStaffMembersIncludeInactive(): Promise<StaffMember[]> {
+  return db.staffMembers.toArray()
+}
+
+export async function getStaffMember(id: string): Promise<StaffMember | undefined> {
+  return db.staffMembers.get(id)
+}
+
+export async function addStaffMember(
+  staff: Omit<StaffMember, 'id' | 'createdAt'>
+): Promise<string> {
+  const id = crypto.randomUUID()
+  await db.staffMembers.add({
+    ...staff,
+    id,
+    createdAt: new Date(),
+  })
+  return id
+}
+
+export async function updateStaffMember(
+  id: string,
+  updates: Partial<StaffMember>
+): Promise<void> {
+  await db.staffMembers.update(id, updates)
+}
+
+export async function deleteStaffMember(id: string): Promise<void> {
+  // 論理削除
+  await db.staffMembers.update(id, { isActive: false })
+}
+
+// 機関（紹介機関・関与機関など）
+export async function getAllOrganizations(): Promise<Organization[]> {
+  return db.organizations.where('isActive').equals(1).toArray()
+}
+
+export async function getAllOrganizationsIncludeInactive(): Promise<Organization[]> {
+  return db.organizations.toArray()
+}
+
+export async function getOrganization(id: string): Promise<Organization | undefined> {
+  return db.organizations.get(id)
+}
+
+export async function getOrganizationsByType(type: Organization['type']): Promise<Organization[]> {
+  return db.organizations.where('type').equals(type).filter(org => org.isActive).toArray()
+}
+
+export async function addOrganization(
+  org: Omit<Organization, 'id' | 'createdAt'>
+): Promise<string> {
+  const id = crypto.randomUUID()
+  await db.organizations.add({
+    ...org,
+    id,
+    createdAt: new Date(),
+  })
+  return id
+}
+
+export async function updateOrganization(
+  id: string,
+  updates: Partial<Organization>
+): Promise<void> {
+  await db.organizations.update(id, updates)
+}
+
+export async function deleteOrganization(id: string): Promise<void> {
+  // 論理削除
+  await db.organizations.update(id, { isActive: false })
+}
+
+// 外部コンタクト（紹介者など個人）
+export async function getAllExternalContacts(): Promise<ExternalContact[]> {
+  return db.externalContacts.where('isActive').equals(1).toArray()
+}
+
+export async function getAllExternalContactsIncludeInactive(): Promise<ExternalContact[]> {
+  return db.externalContacts.toArray()
+}
+
+export async function getExternalContact(id: string): Promise<ExternalContact | undefined> {
+  return db.externalContacts.get(id)
+}
+
+export async function getExternalContactsByOrganization(orgId: string): Promise<ExternalContact[]> {
+  return db.externalContacts.where('organizationId').equals(orgId).filter(c => c.isActive).toArray()
+}
+
+export async function addExternalContact(
+  contact: Omit<ExternalContact, 'id' | 'createdAt'>
+): Promise<string> {
+  const id = crypto.randomUUID()
+  await db.externalContacts.add({
+    ...contact,
+    id,
+    createdAt: new Date(),
+  })
+  return id
+}
+
+export async function updateExternalContact(
+  id: string,
+  updates: Partial<ExternalContact>
+): Promise<void> {
+  await db.externalContacts.update(id, updates)
+}
+
+export async function deleteExternalContact(id: string): Promise<void> {
+  // 論理削除
+  await db.externalContacts.update(id, { isActive: false })
+}
+
+// プロジェクトリンク（プロジェクトと関係者/機関の紐付け）
+export async function getProjectLinks(projectId: string): Promise<ProjectLink[]> {
+  return db.projectLinks.where('projectId').equals(projectId).toArray()
+}
+
+export async function addProjectLink(
+  link: Omit<ProjectLink, 'id' | 'createdAt'>
+): Promise<string> {
+  const id = crypto.randomUUID()
+  await db.projectLinks.add({
+    ...link,
+    id,
+    createdAt: new Date(),
+  })
+  return id
+}
+
+export async function updateProjectLink(
+  id: string,
+  updates: Partial<ProjectLink>
+): Promise<void> {
+  await db.projectLinks.update(id, updates)
+}
+
+export async function deleteProjectLink(id: string): Promise<void> {
+  await db.projectLinks.delete(id)
+}
+
+// プロジェクトの全リンクを削除（プロジェクト削除時）
+export async function deleteAllProjectLinks(projectId: string): Promise<void> {
+  await db.projectLinks.where('projectId').equals(projectId).delete()
 }

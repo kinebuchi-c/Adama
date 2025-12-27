@@ -8,6 +8,7 @@ import { DiplomacyTips } from '../components/DiplomacyTips'
 import { RecentActivity } from '../components/RecentActivity'
 import { PersonSchedule } from '../components/PersonSchedule'
 import { LarkSettingsModal } from '../components/LarkSettings'
+import { MasterDataModal } from '../components/MasterDataModal'
 import { useProjectStore } from '../stores/projectStore'
 import { useNeemStore } from '../stores/neemStore'
 import { useTerritoryStore } from '../stores/territoryStore'
@@ -21,6 +22,7 @@ export function Home() {
   const { loadGrowth } = useNeemStore()
   const { getTotalArea } = useTerritoryStore()
   const [showLarkSettings, setShowLarkSettings] = useState(false)
+  const [showMasterData, setShowMasterData] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState<FilterType>(null)
 
   useEffect(() => {
@@ -87,6 +89,24 @@ export function Home() {
                 navigate(`/country/${code}`, { state: { countryName: name } })
               }} />
             </div>
+            <button
+              onClick={() => setShowMasterData(true)}
+              style={{
+                padding: '10px',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                color: 'white',
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title="マスターデータ管理"
+            >
+              📋
+            </button>
             <button
               onClick={() => setShowLarkSettings(true)}
               style={{
@@ -368,6 +388,9 @@ export function Home() {
 
       {/* Lark設定モーダル */}
       <LarkSettingsModal isOpen={showLarkSettings} onClose={() => setShowLarkSettings(false)} />
+
+      {/* マスターデータ管理モーダル */}
+      <MasterDataModal isOpen={showMasterData} onClose={() => setShowMasterData(false)} />
     </div>
   )
 }
