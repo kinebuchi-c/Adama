@@ -8,7 +8,7 @@ import {
   addLarkUserMapping,
   deleteLarkUserMapping,
 } from '../db/database'
-import { testLarkConnection, getCalendarList, type LarkCalendar } from '../services/larkService'
+import { testLarkConnection } from '../services/larkService'
 import { getOAuthAuthorizationUrl, getCurrentUser, clearUserAuth } from '../services/larkOAuth'
 
 interface LarkSettingsProps {
@@ -23,8 +23,6 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
   const [isTesting, setIsTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
   const [newMapping, setNewMapping] = useState({ displayName: '', larkEmail: '' })
-  const [calendars, setCalendars] = useState<LarkCalendar[]>([])
-  const [isLoadingCalendars, setIsLoadingCalendars] = useState(false)
   const [oauthUser, setOauthUser] = useState<{ name?: string; openId?: string } | null>(null)
 
   useEffect(() => {
@@ -115,34 +113,6 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
       setTestResult({ success: false, message: '接続テストに失敗しました' })
     } finally {
       setIsTesting(false)
-    }
-  }
-
-  const handleLoadCalendars = async () => {
-    if (!settings?.appId || !settings?.appSecret) {
-      setTestResult({ success: false, message: 'App IDとApp Secretを入力してください' })
-      return
-    }
-
-    setIsLoadingCalendars(true)
-    setCalendars([])
-
-    try {
-      const result = await getCalendarList(settings.appId, settings.appSecret)
-      if (result.success && result.calendars) {
-        setCalendars(result.calendars)
-        if (result.calendars.length === 0) {
-          setTestResult({ success: false, message: 'アクセス可能なカレンダーがありません' })
-        } else {
-          setTestResult({ success: true, message: `${result.calendars.length}件のカレンダーを取得しました` })
-        }
-      } else {
-        setTestResult({ success: false, message: `カレンダー取得失敗: ${result.error}` })
-      }
-    } catch (error) {
-      setTestResult({ success: false, message: 'カレンダー取得に失敗しました' })
-    } finally {
-      setIsLoadingCalendars(false)
     }
   }
 
@@ -341,89 +311,6 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
                       fontSize: '14px',
                     }}
                   />
-                </div>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 500, color: '#6b7280', display: 'block', marginBottom: '4px' }}>
-                    カレンダー選択
-                  </label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                    <button
-                      onClick={handleLoadCalendars}
-                      disabled={isLoadingCalendars || !settings.appId || !settings.appSecret}
-                      style={{
-                        padding: '8px 16px',
-                        background: isLoadingCalendars ? '#d1d5db' : '#8b5cf6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '0.85rem',
-                        fontWeight: 500,
-                        cursor: isLoadingCalendars ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      {isLoadingCalendars ? '取得中...' : '📅 カレンダー一覧を取得'}
-                    </button>
-                  </div>
-
-                  {/* カレンダー一覧 */}
-                  {calendars.length > 0 && (
-                    <div style={{
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      marginBottom: '8px',
-                    }}>
-                      {calendars.map((cal) => (
-                        <div
-                          key={cal.calendar_id}
-                          onClick={() => setSettings({ ...settings, defaultCalendarId: cal.calendar_id })}
-                          style={{
-                            padding: '10px 12px',
-                            borderBottom: '1px solid #f3f4f6',
-                            cursor: 'pointer',
-                            background: settings.defaultCalendarId === cal.calendar_id ? '#ede9fe' : 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>
-                              {cal.summary}
-                            </div>
-                            <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
-                              {cal.type === 'primary' ? '📌 プライマリ' : cal.type === 'shared' ? '👥 共有' : cal.type}
-                              {' • '}
-                              {cal.role === 'owner' ? '所有者' : cal.role === 'writer' ? '編集可' : cal.role === 'reader' ? '閲覧のみ' : cal.role}
-                            </div>
-                          </div>
-                          {settings.defaultCalendarId === cal.calendar_id && (
-                            <span style={{ color: '#8b5cf6', fontWeight: 600 }}>✓</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 選択中のカレンダーID */}
-                  {settings.defaultCalendarId && (
-                    <div style={{
-                      padding: '8px 12px',
-                      background: '#f3f4f6',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      color: '#6b7280',
-                      wordBreak: 'break-all',
-                    }}>
-                      <strong>選択中:</strong> {settings.defaultCalendarId}
-                    </div>
-                  )}
-
-                  <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '4px' }}>
-                    編集権限（writer/owner）のあるカレンダーを選択してください
-                  </div>
                 </div>
 
                 <button
