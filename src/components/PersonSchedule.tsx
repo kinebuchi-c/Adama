@@ -40,10 +40,12 @@ export function PersonSchedule() {
     const personMap = new Map<string, { scheduled: ActivityWithProject[]; completed: ActivityWithProject[] }>()
 
     activitiesWithProject.forEach(activity => {
-      if (!activity.participants) return
+      // 社内参加者のみを使用（後方互換性のため旧participantsもフォールバック）
+      const internalParticipantsStr = activity.internalParticipants || activity.participants
+      if (!internalParticipantsStr) return
 
       // カンマや「、」で区切られた複数の参加者を処理
-      const participants = activity.participants.split(/[,、]/).map(p => p.trim()).filter(p => p)
+      const participants = internalParticipantsStr.split(/[,、]/).map(p => p.trim()).filter(p => p)
 
       participants.forEach(person => {
         if (!personMap.has(person)) {

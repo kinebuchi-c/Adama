@@ -18,7 +18,8 @@ export function RecentActivity() {
     date: '',
     title: '',
     description: '',
-    participants: '',
+    internalParticipants: '',
+    externalParticipants: '',
     startTime: '10:00',
     endTime: '11:00',
   })
@@ -118,7 +119,8 @@ export function RecentActivity() {
       date: new Date(activity.date).toISOString().split('T')[0],
       title: activity.title,
       description: activity.description || '',
-      participants: activity.participants || '',
+      internalParticipants: activity.internalParticipants || activity.participants || '',
+      externalParticipants: activity.externalParticipants || '',
       startTime: activity.startTime || '10:00',
       endTime: activity.endTime || '11:00',
     })
@@ -133,7 +135,8 @@ export function RecentActivity() {
         date: new Date(editForm.date),
         title: editForm.title,
         description: editForm.description || undefined,
-        participants: editForm.participants || undefined,
+        internalParticipants: editForm.internalParticipants || undefined,
+        externalParticipants: editForm.externalParticipants || undefined,
         startTime: editForm.startTime,
         endTime: editForm.endTime,
       })
@@ -162,17 +165,18 @@ export function RecentActivity() {
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     )
 
-    const csvHeader = '種別,日付,国,プロジェクト,イベント,参加者,メモ,写真有無\n'
+    const csvHeader = '種別,日付,国,プロジェクト,イベント,社内参加者,社外参加者,メモ,写真有無\n'
     const csvContent = sortedActivities.map(activity => {
       const eventTypeLabel = activity.eventType === 'scheduled' ? '予定' : '完了'
       const date = formatDateForCSV(activity.date)
       const country = getCountryName(activity.countryCode).replace(/"/g, '""')
       const project = activity.projectName.replace(/"/g, '""')
       const title = activity.title.replace(/"/g, '""')
-      const participants = (activity.participants || '').replace(/"/g, '""')
+      const internalParticipants = (activity.internalParticipants || activity.participants || '').replace(/"/g, '""')
+      const externalParticipants = (activity.externalParticipants || '').replace(/"/g, '""')
       const description = (activity.description || '').replace(/"/g, '""').replace(/\n/g, ' ')
       const hasImage = activity.imageUrl ? 'あり' : ''
-      return `${eventTypeLabel},${date},"${country}","${project}","${title}","${participants}","${description}",${hasImage}`
+      return `${eventTypeLabel},${date},"${country}","${project}","${title}","${internalParticipants}","${externalParticipants}","${description}",${hasImage}`
     }).join('\n')
 
     const bom = '\uFEFF'
@@ -311,17 +315,17 @@ export function RecentActivity() {
                   }}>
                     {getCountryName(activity.countryCode)} / {activity.projectName}
                   </div>
-                  {activity.participants && (
+                  {(activity.internalParticipants || activity.participants) && (
                     <div style={{
                       fontSize: '0.6rem',
-                      color: '#ea580c',
+                      color: '#8b5cf6',
                       marginTop: '2px',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '3px',
                     }}>
-                      <span>👥</span>
-                      <span>{activity.participants}</span>
+                      <span>🏢</span>
+                      <span>{activity.internalParticipants || activity.participants}</span>
                     </div>
                   )}
                 </div>
@@ -501,7 +505,7 @@ export function RecentActivity() {
                   }}>
                     {getCountryName(activity.countryCode)} / {activity.projectName}
                   </div>
-                  {activity.participants && (
+                  {(activity.internalParticipants || activity.participants) && (
                     <div style={{
                       fontSize: '0.6rem',
                       color: '#8b5cf6',
@@ -510,8 +514,8 @@ export function RecentActivity() {
                       alignItems: 'center',
                       gap: '3px',
                     }}>
-                      <span>👥</span>
-                      <span>{activity.participants}</span>
+                      <span>🏢</span>
+                      <span>{activity.internalParticipants || activity.participants}</span>
                     </div>
                   )}
                 </div>
@@ -654,16 +658,36 @@ export function RecentActivity() {
                 </div>
               </div>
 
-              {/* 参加者 */}
+              {/* 社内参加者 */}
               <div>
                 <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
-                  参加者
+                  社内参加者
                 </label>
                 <input
                   type="text"
-                  value={editForm.participants}
-                  onChange={(e) => setEditForm({ ...editForm, participants: e.target.value })}
-                  placeholder="例: 木下、田中"
+                  value={editForm.internalParticipants}
+                  onChange={(e) => setEditForm({ ...editForm, internalParticipants: e.target.value })}
+                  placeholder="例: 山田、田中"
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+
+              {/* 社外参加者 */}
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                  社外参加者
+                </label>
+                <input
+                  type="text"
+                  value={editForm.externalParticipants}
+                  onChange={(e) => setEditForm({ ...editForm, externalParticipants: e.target.value })}
+                  placeholder="例: 大使館職員、政府関係者"
                   style={{
                     width: '100%',
                     padding: '8px',

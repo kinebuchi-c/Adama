@@ -23,7 +23,9 @@ export interface ProjectEvent {
   description?: string     // 詳細説明
   imageUrl?: string        // 写真（base64 data URL）
   eventType: EventType     // 完了済み or 予定
-  participants?: string    // 参加者・訪問者（カンマ区切り）
+  participants?: string    // 参加者・訪問者（カンマ区切り）- 後方互換性のため残す
+  internalParticipants?: string  // 社内参加者（カンマ区切り）
+  externalParticipants?: string  // 社外参加者（カンマ区切り）
   activityCategory?: ActivityCategory  // 訪問 or 内部準備
   createdAt: Date
   // Lark連携フィールド

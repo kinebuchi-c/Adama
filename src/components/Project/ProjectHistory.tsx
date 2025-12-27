@@ -38,7 +38,8 @@ export function ProjectHistory({
     description: '',
     imageUrl: '',
     eventType: 'completed' as EventType,
-    participants: '',
+    internalParticipants: '',
+    externalParticipants: '',
     startTime: '10:00',
     endTime: '11:00',
   })
@@ -143,7 +144,8 @@ export function ProjectHistory({
         description: newEvent.description || undefined,
         imageUrl: newEvent.imageUrl || undefined,
         eventType: newEvent.eventType,
-        participants: newEvent.participants || undefined,
+        internalParticipants: newEvent.internalParticipants || undefined,
+        externalParticipants: newEvent.externalParticipants || undefined,
         startTime: newEvent.eventType === 'scheduled' ? newEvent.startTime : undefined,
         endTime: newEvent.eventType === 'scheduled' ? newEvent.endTime : undefined,
         larkSyncStatus: 'not_synced',
@@ -201,7 +203,8 @@ export function ProjectHistory({
         description: '',
         imageUrl: '',
         eventType: 'completed',
-        participants: '',
+        internalParticipants: '',
+        externalParticipants: '',
         startTime: '10:00',
         endTime: '11:00',
       })
@@ -231,7 +234,8 @@ export function ProjectHistory({
       description: event.description || '',
       imageUrl: event.imageUrl || '',
       eventType: event.eventType || 'completed',
-      participants: event.participants || '',
+      internalParticipants: event.internalParticipants || event.participants || '',
+      externalParticipants: event.externalParticipants || '',
       startTime: event.startTime || '10:00',
       endTime: event.endTime || '11:00',
     })
@@ -251,7 +255,8 @@ export function ProjectHistory({
         description: newEvent.description || undefined,
         imageUrl: newEvent.imageUrl || undefined,
         eventType: newEvent.eventType,
-        participants: newEvent.participants || undefined,
+        internalParticipants: newEvent.internalParticipants || undefined,
+        externalParticipants: newEvent.externalParticipants || undefined,
         startTime: newEvent.eventType === 'scheduled' ? newEvent.startTime : undefined,
         endTime: newEvent.eventType === 'scheduled' ? newEvent.endTime : undefined,
       })
@@ -280,7 +285,8 @@ export function ProjectHistory({
         description: '',
         imageUrl: '',
         eventType: 'completed',
-        participants: '',
+        internalParticipants: '',
+        externalParticipants: '',
         startTime: '10:00',
         endTime: '11:00',
       })
@@ -298,7 +304,8 @@ export function ProjectHistory({
       description: '',
       imageUrl: '',
       eventType: 'completed',
-      participants: '',
+      internalParticipants: '',
+      externalParticipants: '',
       startTime: '10:00',
       endTime: '11:00',
     })
@@ -331,15 +338,16 @@ export function ProjectHistory({
     )
 
     // CSV形式で作成
-    const csvHeader = '種別,日付,イベント,参加者,メモ,写真有無\n'
+    const csvHeader = '種別,日付,イベント,社内参加者,社外参加者,メモ,写真有無\n'
     const csvContent = sortedEvents.map(event => {
       const eventTypeLabel = event.eventType === 'scheduled' ? '予定' : '完了'
       const date = formatDateForCSV(event.date)
       const title = event.title.replace(/"/g, '""')
-      const participants = (event.participants || '').replace(/"/g, '""')
+      const internalParticipants = (event.internalParticipants || event.participants || '').replace(/"/g, '""')
+      const externalParticipants = (event.externalParticipants || '').replace(/"/g, '""')
       const description = (event.description || '').replace(/"/g, '""').replace(/\n/g, ' ')
       const hasImage = event.imageUrl ? 'あり' : ''
-      return `${eventTypeLabel},${date},"${title}","${participants}","${description}",${hasImage}`
+      return `${eventTypeLabel},${date},"${title}","${internalParticipants}","${externalParticipants}","${description}",${hasImage}`
     }).join('\n')
 
     const bom = '\uFEFF' // Excel用BOM
@@ -731,16 +739,36 @@ export function ProjectHistory({
                 />
               </div>
 
-              {/* 参加者 */}
+              {/* 社内参加者 */}
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
-                  参加者（任意）
+                  社内参加者（任意）
                 </label>
                 <input
                   type="text"
-                  value={newEvent.participants}
-                  onChange={(e) => setNewEvent({ ...newEvent, participants: e.target.value })}
+                  value={newEvent.internalParticipants}
+                  onChange={(e) => setNewEvent({ ...newEvent, internalParticipants: e.target.value })}
                   placeholder="例: 山田太郎, 田中花子"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+
+              {/* 社外参加者 */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                  社外参加者（任意）
+                </label>
+                <input
+                  type="text"
+                  value={newEvent.externalParticipants}
+                  onChange={(e) => setNewEvent({ ...newEvent, externalParticipants: e.target.value })}
+                  placeholder="例: 大使館職員, 政府関係者"
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -1064,7 +1092,7 @@ export function ProjectHistory({
                         {event.description}
                       </div>
                     )}
-                    {event.participants && (
+                    {(event.internalParticipants || event.participants) && (
                       <div style={{
                         fontSize: '0.75rem',
                         color: '#8b5cf6',
@@ -1073,8 +1101,21 @@ export function ProjectHistory({
                         alignItems: 'center',
                         gap: '4px',
                       }}>
-                        <span>👥</span>
-                        <span>{event.participants}</span>
+                        <span>🏢</span>
+                        <span>社内: {event.internalParticipants || event.participants}</span>
+                      </div>
+                    )}
+                    {event.externalParticipants && (
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#f59e0b',
+                        marginTop: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}>
+                        <span>🌐</span>
+                        <span>社外: {event.externalParticipants}</span>
                       </div>
                     )}
                     {event.imageUrl && (
