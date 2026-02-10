@@ -7,6 +7,17 @@ import type {
   LanguagePreference,
 } from '../types/suginami'
 
+/**
+ * Generate UUID (works without HTTPS)
+ */
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
 export class BaobabDatabase extends Dexie {
   projects!: Table<Project>
   projectEvents!: Table<ProjectEvent>
@@ -171,7 +182,7 @@ export async function getAllProjects(): Promise<Project[]> {
 
 export async function addProject(project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const now = new Date()
-  const id = crypto.randomUUID()
+  const id = generateUUID()
 
   await db.projects.add({
     ...project,
@@ -206,7 +217,7 @@ export async function addProjectEvent(
   event: Omit<ProjectEvent, 'id' | 'createdAt'>
 ): Promise<ProjectEvent> {
   const now = new Date()
-  const id = crypto.randomUUID()
+  const id = generateUUID()
 
   const newEvent: ProjectEvent = {
     ...event,
@@ -363,7 +374,7 @@ export async function addSuginamiTask(
   task: Omit<SuginamiTask, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> {
   const now = new Date()
-  const id = crypto.randomUUID()
+  const id = generateUUID()
 
   await db.suginamiTasks.add({
     ...task,
@@ -408,7 +419,7 @@ export async function addSuginamiDocument(
   document: Omit<SuginamiDocument, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> {
   const now = new Date()
-  const id = crypto.randomUUID()
+  const id = generateUUID()
 
   await db.suginamiDocuments.add({
     ...document,
@@ -521,7 +532,7 @@ export async function addLarkUserMapping(
   mapping: Omit<LarkUserMapping, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> {
   const now = new Date()
-  const id = crypto.randomUUID()
+  const id = generateUUID()
 
   await db.larkUserMappings.add({
     ...mapping,
@@ -567,7 +578,7 @@ export async function updateEventLarkSync(
 
 // スタッフメンバー（社内担当者）
 export async function getAllStaffMembers(): Promise<StaffMember[]> {
-  return db.staffMembers.where('isActive').equals(1).toArray()
+  return db.staffMembers.filter(s => s.isActive === true).toArray()
 }
 
 export async function getAllStaffMembersIncludeInactive(): Promise<StaffMember[]> {
@@ -581,7 +592,7 @@ export async function getStaffMember(id: string): Promise<StaffMember | undefine
 export async function addStaffMember(
   staff: Omit<StaffMember, 'id' | 'createdAt'>
 ): Promise<string> {
-  const id = crypto.randomUUID()
+  const id = generateUUID()
   await db.staffMembers.add({
     ...staff,
     id,
@@ -604,7 +615,7 @@ export async function deleteStaffMember(id: string): Promise<void> {
 
 // 機関（紹介機関・関与機関など）
 export async function getAllOrganizations(): Promise<Organization[]> {
-  return db.organizations.where('isActive').equals(1).toArray()
+  return db.organizations.filter(o => o.isActive === true).toArray()
 }
 
 export async function getAllOrganizationsIncludeInactive(): Promise<Organization[]> {
@@ -622,7 +633,7 @@ export async function getOrganizationsByType(type: Organization['type']): Promis
 export async function addOrganization(
   org: Omit<Organization, 'id' | 'createdAt'>
 ): Promise<string> {
-  const id = crypto.randomUUID()
+  const id = generateUUID()
   await db.organizations.add({
     ...org,
     id,
@@ -645,7 +656,7 @@ export async function deleteOrganization(id: string): Promise<void> {
 
 // 外部コンタクト（紹介者など個人）
 export async function getAllExternalContacts(): Promise<ExternalContact[]> {
-  return db.externalContacts.where('isActive').equals(1).toArray()
+  return db.externalContacts.filter(c => c.isActive === true).toArray()
 }
 
 export async function getAllExternalContactsIncludeInactive(): Promise<ExternalContact[]> {
@@ -663,7 +674,7 @@ export async function getExternalContactsByOrganization(orgId: string): Promise<
 export async function addExternalContact(
   contact: Omit<ExternalContact, 'id' | 'createdAt'>
 ): Promise<string> {
-  const id = crypto.randomUUID()
+  const id = generateUUID()
   await db.externalContacts.add({
     ...contact,
     id,
@@ -692,7 +703,7 @@ export async function getProjectLinks(projectId: string): Promise<ProjectLink[]>
 export async function addProjectLink(
   link: Omit<ProjectLink, 'id' | 'createdAt'>
 ): Promise<string> {
-  const id = crypto.randomUUID()
+  const id = generateUUID()
   await db.projectLinks.add({
     ...link,
     id,

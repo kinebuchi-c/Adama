@@ -22,13 +22,24 @@ export interface LarkUserToken {
 }
 
 /**
+ * Generate a simple UUID (works without HTTPS)
+ */
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+/**
  * Generate OAuth authorization URL
  */
 export function getOAuthAuthorizationUrl(appId: string, redirectUri: string, state?: string): string {
   const params = new URLSearchParams({
     app_id: appId,
     redirect_uri: redirectUri,
-    state: state || crypto.randomUUID(),
+    state: state || generateUUID(),
   })
 
   return `https://open.larksuite.com/open-apis/authen/v1/authorize?${params.toString()}`

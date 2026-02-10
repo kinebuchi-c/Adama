@@ -7,8 +7,8 @@ import {
   addProject as dbAddProject,
   updateProject as dbUpdateProject,
   deleteProject as dbDeleteProject,
-  addGrowthPoints,
-} from '../db/database'
+} from '../db/cloudDatabase'
+import { addGrowthPoints } from '../db/database'
 
 interface ProjectState {
   projects: Project[]

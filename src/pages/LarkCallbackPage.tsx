@@ -22,6 +22,8 @@ export function LarkCallbackPage() {
     const code = searchParams.get('code')
     const error = searchParams.get('error')
 
+    console.log('LarkCallback: code=', code?.substring(0, 20), 'error=', error)
+
     if (error) {
       setStatus('error')
       setMessage(`認証エラー: ${error}`)
@@ -35,12 +37,16 @@ export function LarkCallbackPage() {
     }
 
     try {
+      // Wait a bit for database to be ready
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       // Get app credentials from settings
       const settings = await getLarkSettings()
+      console.log('LarkCallback: settings=', settings)
 
       if (!settings?.appId || !settings?.appSecret) {
         setStatus('error')
-        setMessage('Larkアプリ設定が見つかりません')
+        setMessage('Larkアプリ設定が見つかりません。ホームに戻って設定を保存してから再度お試しください。')
         return
       }
 

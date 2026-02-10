@@ -165,6 +165,7 @@ export const COUNTRY_DATA: Record<string, CountryInfo> = {
   'South Africa': { name_ja: '南アフリカ', iso_a2: 'ZA' },
   'Lesotho': { name_ja: 'レソト', iso_a2: 'LS' },
   'Eswatini': { name_ja: 'エスワティニ', iso_a2: 'SZ' },
+  'eSwatini': { name_ja: 'エスワティニ', iso_a2: 'SZ' },
   'Swaziland': { name_ja: 'エスワティニ', iso_a2: 'SZ' },
   'Madagascar': { name_ja: 'マダガスカル', iso_a2: 'MG' },
 

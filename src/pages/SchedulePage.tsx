@@ -1,8 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import type { ProjectEvent, ActivityCategory } from '../types'
-import { db } from '../db/database'
+import type { ProjectEvent, ActivityCategory, Project } from '../types'
+import { getAllProjectEvents, getAllProjects } from '../db/cloudDatabase'
 import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS } from '../types'
 
 interface ActivityWithProject extends ProjectEvent {
@@ -13,9 +12,28 @@ interface ActivityWithProject extends ProjectEvent {
 export function SchedulePage() {
   const navigate = useNavigate()
 
-  // useLiveQueryでデータベースの変更を自動監視
-  const allEvents = useLiveQuery(() => db.projectEvents.toArray())
-  const projects = useLiveQuery(() => db.projects.toArray())
+  // Cloud data state
+  const [allEvents, setAllEvents] = useState<ProjectEvent[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+
+  // Load data from cloud
+  const loadData = useCallback(async () => {
+    try {
+      const [events, projs] = await Promise.all([
+        getAllProjectEvents(),
+        getAllProjects(),
+      ])
+      setAllEvents(events)
+      setProjects(projs)
+    } catch (error) {
+      console.error('Failed to load schedule data:', error)
+    }
+  }, [])
+
+  // Initial load
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const scheduledActivities = useMemo(() => {
     if (!allEvents || !projects) {
@@ -36,13 +54,22 @@ export function SchedulePage() {
       })
       .filter((a): a is ActivityWithProject => a !== null)
 
-    // 予定のみ：日付昇順（近い順）
+    // 今日の日付（時間は0:00:00にリセット）
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // 予定：scheduledで今日以降の日付のみ、日付昇順（近い順）
     return activitiesWithProject
-      .filter(a => a.eventType === 'scheduled')
+      .filter(a => {
+        if (a.eventType !== 'scheduled') return false
+        const eventDate = new Date(a.date)
+        eventDate.setHours(0, 0, 0, 0)
+        return eventDate >= today
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   }, [allEvents, projects])
 
-  const isLoading = allEvents === undefined || projects === undefined
+  const isLoading = false // フォールバック値があるのでロード中にはならない
 
   const formatDate = (date: Date) => {
     const d = new Date(date)

@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import type { ProjectEvent } from '../types'
-import { db } from '../db/database'
+import type { ProjectEvent, Project } from '../types'
+import { getAllProjectEvents, getAllProjects } from '../db/cloudDatabase'
 import { COUNTRY_NAMES } from '../types'
 
 interface ActivityWithProject extends ProjectEvent {
@@ -14,9 +13,28 @@ export function PersonSchedule() {
   const navigate = useNavigate()
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null)
 
-  // Use live query to automatically update when database changes
-  const allEvents = useLiveQuery(() => db.projectEvents.toArray(), [])
-  const projects = useLiveQuery(() => db.projects.toArray(), [])
+  // Cloud data state
+  const [allEvents, setAllEvents] = useState<ProjectEvent[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+
+  // Load data from cloud
+  const loadData = useCallback(async () => {
+    try {
+      const [events, projs] = await Promise.all([
+        getAllProjectEvents(),
+        getAllProjects(),
+      ])
+      setAllEvents(events)
+      setProjects(projs)
+    } catch (error) {
+      console.error('Failed to load person schedule data:', error)
+    }
+  }, [])
+
+  // Initial load
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const personActivities = useMemo(() => {
     if (!allEvents || !projects) return []
@@ -36,6 +54,10 @@ export function PersonSchedule() {
       })
       .filter((a): a is ActivityWithProject => a !== null)
 
+    // 今日の日付（時間は0:00:00にリセット）
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
     // 参加者ごとにグループ化
     const personMap = new Map<string, { scheduled: ActivityWithProject[]; completed: ActivityWithProject[] }>()
 
@@ -47,13 +69,19 @@ export function PersonSchedule() {
       // カンマや「、」で区切られた複数の参加者を処理
       const participants = internalParticipantsStr.split(/[,、]/).map(p => p.trim()).filter(p => p)
 
+      // 日付チェック
+      const eventDate = new Date(activity.date)
+      eventDate.setHours(0, 0, 0, 0)
+      const isPast = eventDate < today
+
       participants.forEach(person => {
         if (!personMap.has(person)) {
           personMap.set(person, { scheduled: [], completed: [] })
         }
 
         const personData = personMap.get(person)!
-        if (activity.eventType === 'scheduled') {
+        // scheduledでも過去日付なら完了扱い
+        if (activity.eventType === 'scheduled' && !isPast) {
           personData.scheduled.push(activity)
         } else {
           personData.completed.push(activity)
@@ -71,7 +99,7 @@ export function PersonSchedule() {
       .sort((a, b) => b.scheduled.length - a.scheduled.length || b.completed.length - a.completed.length)
   }, [allEvents, projects])
 
-  const isLoading = allEvents === undefined || projects === undefined
+  const isLoading = false // フォールバック値があるのでロード中にはならない
 
   const formatDate = (date: Date) => {
     const d = new Date(date)

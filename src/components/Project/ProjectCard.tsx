@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import type { Project, ProjectStatus, DiplomacyPhase } from '../../types'
-import { STATUS_COLORS, STATUS_LABELS, DIPLOMACY_PHASE_LABELS, DIPLOMACY_PHASE_COLORS } from '../../types'
+import type { Project, ProjectStatus, DiplomacyPhase, Organization } from '../../types'
+import { STATUS_COLORS, STATUS_LABELS, DIPLOMACY_PHASE_LABELS, DIPLOMACY_PHASE_COLORS, ORGANIZATION_TYPE_LABELS } from '../../types'
 import { ProjectHistory } from './ProjectHistory'
+import { getProjectLinks, getOrganization } from '../../db/database'
 
 interface ProjectCardProps {
   project: Project
   countryName?: string
+  initiallyOpen?: boolean
   onEdit: (project: Project) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: ProjectStatus) => void
@@ -20,9 +22,47 @@ const statusOrder: ProjectStatus[] = [
   'completed',
 ]
 
-export function ProjectCard({ project, countryName, onEdit, onDelete, onStatusChange, onDiplomacyPhaseChange }: ProjectCardProps) {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+export function ProjectCard({ project, countryName, initiallyOpen, onEdit, onDelete, onStatusChange, onDiplomacyPhaseChange }: ProjectCardProps) {
+  const [isHistoryOpen, setIsHistoryOpen] = useState(initiallyOpen ?? false)
+  const [introducerOrg, setIntroducerOrg] = useState<Organization | null>(null)
+  const [partnerOrgs, setPartnerOrgs] = useState<Organization[]>([])
   const diplomacyPhase = project.diplomacyPhase ?? 0
+
+  // プロジェクトリンクから紹介機関と参画機関を取得
+  useEffect(() => {
+    const loadLinks = async () => {
+      try {
+        const links = await getProjectLinks(project.id)
+
+        // 紹介機関
+        const orgLink = links.find(l => l.relationType === 'introducer_org')
+        if (orgLink?.organizationId) {
+          const org = await getOrganization(orgLink.organizationId)
+          if (org) {
+            setIntroducerOrg(org)
+          }
+        } else {
+          setIntroducerOrg(null)
+        }
+
+        // 参画機関
+        const partnerLinks = links.filter(l => l.relationType === 'partner_org')
+        const partnerOrgsList: Organization[] = []
+        for (const link of partnerLinks) {
+          if (link.organizationId) {
+            const org = await getOrganization(link.organizationId)
+            if (org) {
+              partnerOrgsList.push(org)
+            }
+          }
+        }
+        setPartnerOrgs(partnerOrgsList)
+      } catch (error) {
+        console.error('Failed to load project links:', error)
+      }
+    }
+    loadLinks()
+  }, [project.id])
 
   // 活動履歴からの自動更新ハンドラ
   const handleProjectUpdate = (updates: { diplomacyPhase?: DiplomacyPhase; status?: ProjectStatus }) => {
@@ -142,6 +182,36 @@ export function ProjectCard({ project, countryName, onEdit, onDelete, onStatusCh
           </div>
         )}
 
+        {/* 紹介機関 */}
+        {introducerOrg && (
+          <div style={{
+            fontSize: '13px',
+            color: '#6b7280',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}>
+            <span>🏢</span>
+            <span>紹介機関: {introducerOrg.name} ({ORGANIZATION_TYPE_LABELS[introducerOrg.type]})</span>
+          </div>
+        )}
+
+        {/* 参画機関 */}
+        {partnerOrgs.length > 0 && (
+          <div style={{
+            fontSize: '13px',
+            color: '#6b7280',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '6px',
+          }}>
+            <span>🤝</span>
+            <span>参画: {partnerOrgs.map(o => o.name).join(', ')}</span>
+          </div>
+        )}
+
         {/* 紹介者 */}
         {project.referrer && (
           <div style={{
@@ -153,7 +223,7 @@ export function ProjectCard({ project, countryName, onEdit, onDelete, onStatusCh
             gap: '6px',
           }}>
             <span>🤝</span>
-            <span>紹介: {project.referrer}</span>
+            <span>紹介者: {project.referrer}</span>
           </div>
         )}
 

@@ -14,13 +14,19 @@ import {
   HelpPage,
 } from './features/suginami/pages'
 import { TerritoryPage } from './features/territory'
+import { Shibuya5FPage } from './features/shibuya5f'
+
+const basename = import.meta.env.BASE_URL
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         {/* World Territory Vision Route */}
         <Route path="/territory" element={<TerritoryPage />} />
+
+        {/* Shibuya 5F Schedule Route */}
+        <Route path="/shibuya5f" element={<Shibuya5FPage />} />
 
         {/* Suginami New Resident Support Routes */}
         <Route path="/suginami" element={<SuginamiLayout />}>

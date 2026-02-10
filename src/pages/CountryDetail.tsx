@@ -8,6 +8,22 @@ import type { Project, ProjectStatus, DiplomacyPhase, ProjectEvent, CountryConta
 import { COUNTRY_NAMES, COUNTRY_INFO } from '../types'
 import { getCountryAsTerritory } from '../types/territory'
 import { db } from '../db/database'
+import { addProjectLink, deleteAllProjectLinks, getOrganization, updateOrganization, getAllProjectEvents } from '../db/cloudDatabase'
+
+interface ProjectFormData {
+  name: string
+  status: ProjectStatus
+  diplomacyPhase: DiplomacyPhase
+  assignee: string
+  assigneeStaffId?: string
+  notes: string
+  referrer: string
+  referrerContactId?: string
+  introducerOrgId?: string
+  introducerOrgName?: string
+  partnerOrgIds?: string[]
+  managementUrl: string
+}
 
 export function CountryDetail() {
   const { countryCode } = useParams<{ countryCode: string }>()
@@ -30,10 +46,12 @@ export function CountryDetail() {
   const [showDetailedInfo, setShowDetailedInfo] = useState(false)
 
   // 国名の取得
-  const countryName = (location.state as { countryName?: string })?.countryName
+  const locationState = location.state as { countryName?: string; projectId?: string; eventId?: string } | null
+  const countryName = locationState?.countryName
     || (countryCode && COUNTRY_NAMES[countryCode])
     || countryCode
     || '不明な国'
+  const selectedProjectId = locationState?.projectId
 
   // 国の基礎情報を取得
   const countryInfo = countryCode ? COUNTRY_INFO[countryCode] : null
@@ -63,7 +81,7 @@ export function CountryDetail() {
         return
       }
 
-      const allEvents = await db.projectEvents.toArray()
+      const allEvents = await getAllProjectEvents()
       const projectMap = new Map(projects.map(p => [p.id, p]))
 
       const activities = allEvents
@@ -146,10 +164,10 @@ export function CountryDetail() {
     }))
   }
 
-  const handleAddProject = useCallback(async (data: { name: string; status: ProjectStatus; diplomacyPhase: DiplomacyPhase; assignee: string; notes: string; referrer: string; managementUrl: string }) => {
+  const handleAddProject = useCallback(async (data: ProjectFormData) => {
     if (!countryCode) return
 
-    await addProject({
+    const projectId = await addProject({
       countryCode,
       name: data.name,
       status: data.status,
@@ -159,6 +177,54 @@ export function CountryDetail() {
       referrer: data.referrer || undefined,
       managementUrl: data.managementUrl || undefined,
     })
+
+    // プロジェクトリンクを作成
+    if (projectId) {
+      // 担当者リンク
+      if (data.assigneeStaffId) {
+        await addProjectLink({
+          projectId,
+          relationType: 'assignee',
+          staffId: data.assigneeStaffId,
+        })
+      }
+      // 紹介機関リンク
+      if (data.introducerOrgId) {
+        await addProjectLink({
+          projectId,
+          relationType: 'introducer_org',
+          organizationId: data.introducerOrgId,
+        })
+        // 紹介機関の関連国に自動追加
+        const org = await getOrganization(data.introducerOrgId)
+        if (org) {
+          const existingCountries = org.countryCodes || []
+          if (!existingCountries.includes(countryCode)) {
+            await updateOrganization(data.introducerOrgId, {
+              countryCodes: [...existingCountries, countryCode],
+            })
+          }
+        }
+      }
+      // 紹介者リンク
+      if (data.referrerContactId) {
+        await addProjectLink({
+          projectId,
+          relationType: 'introducer',
+          contactId: data.referrerContactId,
+        })
+      }
+      // 参画機関リンク
+      if (data.partnerOrgIds && data.partnerOrgIds.length > 0) {
+        for (const orgId of data.partnerOrgIds) {
+          await addProjectLink({
+            projectId,
+            relationType: 'partner_org',
+            organizationId: orgId,
+          })
+        }
+      }
+    }
 
     // この国を領土に追加（まだ追加されていない場合）
     const existingCountryCodes = cities.map(c => c.nameEn)
@@ -172,7 +238,7 @@ export function CountryDetail() {
     await refreshGrowth()
   }, [countryCode, countryName, addProject, refreshGrowth, addCity, cities])
 
-  const handleUpdateProject = useCallback(async (id: string, data: { name: string; status: ProjectStatus; diplomacyPhase: DiplomacyPhase; assignee: string; notes: string; referrer: string; managementUrl: string }) => {
+  const handleUpdateProject = useCallback(async (id: string, data: ProjectFormData) => {
     await updateProject(id, {
       name: data.name,
       status: data.status,
@@ -182,8 +248,59 @@ export function CountryDetail() {
       referrer: data.referrer || undefined,
       managementUrl: data.managementUrl || undefined,
     })
+
+    // プロジェクトリンクを更新（既存を削除して新規作成）
+    await deleteAllProjectLinks(id)
+
+    // 担当者リンク
+    if (data.assigneeStaffId) {
+      await addProjectLink({
+        projectId: id,
+        relationType: 'assignee',
+        staffId: data.assigneeStaffId,
+      })
+    }
+    // 紹介機関リンク
+    if (data.introducerOrgId) {
+      await addProjectLink({
+        projectId: id,
+        relationType: 'introducer_org',
+        organizationId: data.introducerOrgId,
+      })
+      // 紹介機関の関連国に自動追加
+      if (countryCode) {
+        const org = await getOrganization(data.introducerOrgId)
+        if (org) {
+          const existingCountries = org.countryCodes || []
+          if (!existingCountries.includes(countryCode)) {
+            await updateOrganization(data.introducerOrgId, {
+              countryCodes: [...existingCountries, countryCode],
+            })
+          }
+        }
+      }
+    }
+    // 紹介者リンク
+    if (data.referrerContactId) {
+      await addProjectLink({
+        projectId: id,
+        relationType: 'introducer',
+        contactId: data.referrerContactId,
+      })
+    }
+    // 参画機関リンク
+    if (data.partnerOrgIds && data.partnerOrgIds.length > 0) {
+      for (const orgId of data.partnerOrgIds) {
+        await addProjectLink({
+          projectId: id,
+          relationType: 'partner_org',
+          organizationId: orgId,
+        })
+      }
+    }
+
     await refreshGrowth()
-  }, [updateProject, refreshGrowth])
+  }, [updateProject, refreshGrowth, countryCode])
 
   const handleDiplomacyPhaseChange = useCallback(async (id: string, phase: DiplomacyPhase) => {
     await updateProject(id, { diplomacyPhase: phase })
@@ -900,6 +1017,7 @@ export function CountryDetail() {
             projects={countryProjects}
             countryCode={countryCode}
             countryName={countryName}
+            selectedProjectId={selectedProjectId}
             onAddProject={handleAddProject}
             onUpdateProject={handleUpdateProject}
             onDeleteProject={handleDeleteProject}

@@ -10,8 +10,13 @@ interface ProjectFormData {
   status: ProjectStatus
   diplomacyPhase: DiplomacyPhase
   assignee: string
+  assigneeStaffId?: string
   notes: string
   referrer: string
+  referrerContactId?: string
+  introducerOrgId?: string
+  introducerOrgName?: string
+  partnerOrgIds?: string[]
   managementUrl: string
 }
 
@@ -19,6 +24,7 @@ interface ProjectListProps {
   projects: Project[]
   countryCode: string
   countryName: string
+  selectedProjectId?: string
   onAddProject: (data: ProjectFormData) => void
   onUpdateProject: (id: string, data: ProjectFormData) => void
   onDeleteProject: (id: string) => void
@@ -30,6 +36,7 @@ export function ProjectList({
   projects,
   countryCode: _countryCode,
   countryName,
+  selectedProjectId,
   onAddProject,
   onUpdateProject,
   onDeleteProject,
@@ -180,6 +187,7 @@ export function ProjectList({
                 key={project.id}
                 project={project}
                 countryName={countryName}
+                initiallyOpen={project.id === selectedProjectId}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onStatusChange={onStatusChange}

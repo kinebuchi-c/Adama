@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import type { ProjectEvent, EventType, DiplomacyPhase, ProjectStatus } from '../../types'
+import type { ProjectEvent, EventType, DiplomacyPhase, ProjectStatus, MeetingLocationType } from '../../types'
 import { EVENT_PRESETS, EVENT_AUTO_UPDATE, DIPLOMACY_PHASE_LABELS, STATUS_LABELS } from '../../types'
-import { getProjectEvents, addProjectEvent, deleteProjectEvent, updateProjectEvent } from '../../db/database'
+import { getProjectEvents, addProjectEvent, deleteProjectEvent, updateProjectEvent } from '../../db/cloudDatabase'
 import { createLarkEvent, updateLarkEvent, deleteLarkEvent, isLarkSyncEnabled } from '../../services/larkService'
 
 interface ProjectHistoryProps {
@@ -42,6 +42,7 @@ export function ProjectHistory({
     externalParticipants: '',
     startTime: '10:00',
     endTime: '11:00',
+    meetingLocation: undefined as MeetingLocationType | undefined,
   })
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -148,6 +149,7 @@ export function ProjectHistory({
         externalParticipants: newEvent.externalParticipants || undefined,
         startTime: newEvent.eventType === 'scheduled' ? newEvent.startTime : undefined,
         endTime: newEvent.eventType === 'scheduled' ? newEvent.endTime : undefined,
+        meetingLocation: newEvent.meetingLocation,
         larkSyncStatus: 'not_synced',
       })
       console.log('handleAddEvent: event added to database:', addedEvent)
@@ -207,6 +209,7 @@ export function ProjectHistory({
         externalParticipants: '',
         startTime: '10:00',
         endTime: '11:00',
+        meetingLocation: undefined,
       })
       setIsAdding(false)
       await loadEvents()
@@ -238,6 +241,7 @@ export function ProjectHistory({
       externalParticipants: event.externalParticipants || '',
       startTime: event.startTime || '10:00',
       endTime: event.endTime || '11:00',
+      meetingLocation: event.meetingLocation,
     })
     setSyncToLark(!!event.larkEventId || true)
     setIsAdding(false)
@@ -259,6 +263,7 @@ export function ProjectHistory({
         externalParticipants: newEvent.externalParticipants || undefined,
         startTime: newEvent.eventType === 'scheduled' ? newEvent.startTime : undefined,
         endTime: newEvent.eventType === 'scheduled' ? newEvent.endTime : undefined,
+        meetingLocation: newEvent.meetingLocation,
       })
 
       // 予定イベントでLark同期が有効な場合
@@ -289,6 +294,7 @@ export function ProjectHistory({
         externalParticipants: '',
         startTime: '10:00',
         endTime: '11:00',
+        meetingLocation: undefined,
       })
       await loadEvents()
     } finally {
@@ -308,6 +314,7 @@ export function ProjectHistory({
       externalParticipants: '',
       startTime: '10:00',
       endTime: '11:00',
+      meetingLocation: undefined,
     })
   }
 
@@ -596,6 +603,67 @@ export function ProjectHistory({
                   </div>
                 </div>
               )}
+
+              {/* 訪問/来社選択 */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                  場所
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setNewEvent({ ...newEvent, meetingLocation: 'visit' })}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      background: newEvent.meetingLocation === 'visit' ? '#8b5cf6' : '#f3f4f6',
+                      color: newEvent.meetingLocation === 'visit' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    🚗 訪問
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewEvent({ ...newEvent, meetingLocation: 'office' })}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      background: newEvent.meetingLocation === 'office' ? '#10b981' : '#f3f4f6',
+                      color: newEvent.meetingLocation === 'office' ? 'white' : '#374151',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    🏢 来社
+                  </button>
+                  {newEvent.meetingLocation && (
+                    <button
+                      type="button"
+                      onClick={() => setNewEvent({ ...newEvent, meetingLocation: undefined })}
+                      style={{
+                        padding: '10px',
+                        background: '#f3f4f6',
+                        color: '#9ca3af',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                      }}
+                      title="クリア"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
 
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
@@ -1033,7 +1101,21 @@ export function ProjectHistory({
                       alignItems: 'center',
                       gap: '8px',
                       marginBottom: '2px',
+                      flexWrap: 'wrap',
                     }}>
+                      {/* 訪問/来社バッジ */}
+                      {event.meetingLocation && (
+                        <span style={{
+                          fontSize: '0.65rem',
+                          background: event.meetingLocation === 'visit' ? '#8b5cf6' : '#10b981',
+                          color: 'white',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontWeight: 600,
+                        }}>
+                          {event.meetingLocation === 'visit' ? '🚗 訪問' : '🏢 来社'}
+                        </span>
+                      )}
                       <span style={{
                         fontSize: '0.9rem',
                         fontWeight: 500,

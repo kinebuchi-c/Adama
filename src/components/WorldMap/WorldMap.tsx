@@ -4,10 +4,12 @@ import {
   Geographies,
   Geography,
   ZoomableGroup,
+  Marker,
 } from 'react-simple-maps'
 import { useProjectStore } from '../../stores/projectStore'
 import { STATUS_COLORS, STATUS_LABELS } from '../../types'
-import { getJapaneseName, getIsoA2 } from '../../utils/countryData'
+import { getJapaneseName, getIsoA2, getJapaneseNameByCode } from '../../utils/countryData'
+import { CAPITAL_COORDINATES } from '../../utils/capitalData'
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 
@@ -21,6 +23,7 @@ interface TooltipInfo {
   status: string | null
   x: number
   y: number
+  isCapital?: boolean
 }
 
 function WorldMapComponent({ onCountryClick }: WorldMapProps) {
@@ -28,6 +31,7 @@ function WorldMapComponent({ onCountryClick }: WorldMapProps) {
   const projectCounts = getProjectCounts()
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null)
   const [moonHovered, setMoonHovered] = useState(false)
+  const [zoom, setZoom] = useState(1)
 
   // 月のプロジェクト情報
   const moonCount = projectCounts.get('MOON') || 0
@@ -74,7 +78,11 @@ function WorldMapComponent({ onCountryClick }: WorldMapProps) {
         height={450}
         style={{ width: '100%', height: '100%' }}
       >
-        <ZoomableGroup center={[0, 30]} zoom={1}>
+        <ZoomableGroup
+          center={[0, 30]}
+          zoom={1}
+          onMoveEnd={({ zoom: newZoom }) => setZoom(newZoom)}
+        >
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
@@ -137,6 +145,47 @@ function WorldMapComponent({ onCountryClick }: WorldMapProps) {
               })
             }
           </Geographies>
+
+          {/* 首都マーカー（ズーム時のみ表示） */}
+          {zoom > 1.5 && Object.entries(CAPITAL_COORDINATES).map(([countryCode, capital]) => (
+            <Marker key={countryCode} coordinates={capital.coordinates}>
+              <circle
+                r={3 / zoom}
+                fill="#3b82f6"
+                stroke="#ffffff"
+                strokeWidth={1 / zoom}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  const countryName = getJapaneseNameByCode(countryCode)
+                  onCountryClick(countryCode, countryName)
+                }}
+                onMouseEnter={(e) => {
+                  const rect = (e.target as SVGElement).ownerSVGElement?.getBoundingClientRect()
+                  if (rect) {
+                    setTooltip({
+                      name: capital.name,
+                      count: 0,
+                      status: null,
+                      x: e.clientX - rect.left,
+                      y: e.clientY - rect.top,
+                      isCapital: true,
+                    })
+                  }
+                }}
+                onMouseMove={(e) => {
+                  const rect = (e.target as SVGElement).ownerSVGElement?.getBoundingClientRect()
+                  if (rect) {
+                    setTooltip(prev => prev ? {
+                      ...prev,
+                      x: e.clientX - rect.left,
+                      y: e.clientY - rect.top,
+                    } : null)
+                  }
+                }}
+                onMouseLeave={() => setTooltip(null)}
+              />
+            </Marker>
+          ))}
         </ZoomableGroup>
       </ComposableMap>
 
@@ -227,24 +276,34 @@ function WorldMapComponent({ onCountryClick }: WorldMapProps) {
             left: tooltip.x + 10,
             top: tooltip.y - 50,
           }),
-          background: 'rgba(17, 24, 39, 0.95)',
+          background: tooltip.isCapital ? 'rgba(59, 130, 246, 0.95)' : 'rgba(17, 24, 39, 0.95)',
           color: 'white',
-          padding: '8px 12px',
+          padding: tooltip.isCapital ? '6px 10px' : '8px 12px',
           borderRadius: '8px',
-          fontSize: '14px',
+          fontSize: tooltip.isCapital ? '12px' : '14px',
           boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
           pointerEvents: 'none',
           zIndex: 100,
         }}>
-          <div style={{ fontWeight: 'bold' }}>{tooltip.name === '月' ? '🌙 月' : tooltip.name}</div>
-          {tooltip.count > 0 ? (
-            <div style={{ fontSize: '12px', color: '#d1d5db', marginTop: '4px' }}>
-              {tooltip.count} プロジェクト • {tooltip.status}
+          {tooltip.isCapital ? (
+            <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontSize: '10px' }}>🏛️</span>
+              <span>{tooltip.name}</span>
+              <span style={{ fontSize: '10px', opacity: 0.8 }}>（首都）</span>
             </div>
           ) : (
-            <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
-              クリックして追加
-            </div>
+            <>
+              <div style={{ fontWeight: 'bold' }}>{tooltip.name === '月' ? '🌙 月' : tooltip.name}</div>
+              {tooltip.count > 0 ? (
+                <div style={{ fontSize: '12px', color: '#d1d5db', marginTop: '4px' }}>
+                  {tooltip.count} プロジェクト • {tooltip.status}
+                </div>
+              ) : (
+                <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                  クリックして追加
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

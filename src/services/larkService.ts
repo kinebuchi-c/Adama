@@ -219,10 +219,18 @@ export async function createLarkEvent(
   projectName: string,
   countryName?: string
 ): Promise<{ success: boolean; larkEventId?: string; error?: string }> {
+  console.log('=== createLarkEvent START ===')
+  console.log('isDev:', isDev)
+  console.log('API_URL:', API_URL)
+  console.log('LARK_API_BASE:', LARK_API_BASE)
+
   try {
     const settings = await getLarkSettings()
+    console.log('settings.enabled:', settings?.enabled)
+    console.log('settings.appId:', settings?.appId?.substring(0, 10) + '...')
 
     if (!settings?.enabled || !settings.appId || !settings.appSecret) {
+      console.log('Lark not configured, returning early')
       return { success: false, error: 'Lark連携が設定されていません' }
     }
 
@@ -299,11 +307,16 @@ export async function createLarkEvent(
       headers['Authorization'] = `Bearer ${token}`
     }
 
-    const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars/${calendarId}/events?user_id_type=open_id`, {
+    const apiUrl = `${LARK_API_BASE}/calendar/v4/calendars/${calendarId}/events?user_id_type=open_id`
+    console.log('Making request to:', apiUrl)
+    console.log('Request body keys:', Object.keys(requestBody))
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody),
     })
+    console.log('Response status:', response.status)
 
     // Check if response is OK
     if (!response.ok) {
@@ -524,9 +537,32 @@ export async function testLarkConnection(
   appSecret: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // In production, use Lambda proxy with credentials in body
+    if (!isDev) {
+      const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          app_id: appId,
+          app_secret: appSecret,
+          _method: 'GET', // Tell Lambda this is actually a GET request
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.code !== 0) {
+        throw new Error(data.msg || 'Failed to access calendar')
+      }
+
+      return { success: true }
+    }
+
+    // In development, get token directly and make request
     const token = await getTenantAccessToken(appId, appSecret)
 
-    // Try to get calendar list to verify connection
     const response = await fetch(`${LARK_API_BASE}/calendar/v4/calendars`, {
       method: 'GET',
       headers: {

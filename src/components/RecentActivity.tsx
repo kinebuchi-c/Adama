@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import type { ProjectEvent, ActivityCategory } from '../types'
-import { db, deleteProjectEvent, updateProjectEvent } from '../db/database'
+import type { ProjectEvent, ActivityCategory, Project } from '../types'
+import { deleteProjectEvent, updateProjectEvent, getAllProjectEvents, getAllProjects } from '../db/cloudDatabase'
 import { deleteLarkEvent, updateLarkEvent, isLarkSyncEnabled } from '../services/larkService'
 import { COUNTRY_NAMES, EVENT_CATEGORY, ACTIVITY_CATEGORY_LABELS, ACTIVITY_CATEGORY_COLORS, EVENT_PRESETS } from '../types'
 
@@ -24,10 +23,31 @@ export function RecentActivity() {
     endTime: '11:00',
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
+  const [isScheduledExpanded, setIsScheduledExpanded] = useState(false)
 
-  // useLiveQueryでデータベースの変更を自動監視
-  const allEvents = useLiveQuery(() => db.projectEvents.toArray())
-  const projects = useLiveQuery(() => db.projects.toArray())
+  // Cloud data state
+  const [allEvents, setAllEvents] = useState<ProjectEvent[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+
+  // Load data from cloud
+  const loadData = useCallback(async () => {
+    try {
+      const [events, projs] = await Promise.all([
+        getAllProjectEvents(),
+        getAllProjects(),
+      ])
+      setAllEvents(events)
+      setProjects(projs)
+    } catch (error) {
+      console.error('Failed to load activity data:', error)
+    }
+  }, [])
+
+  // Initial load
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const { scheduledActivities, completedActivities, allActivities } = useMemo(() => {
     if (!allEvents || !projects) {
@@ -48,14 +68,29 @@ export function RecentActivity() {
       })
       .filter((a): a is ActivityWithProject => a !== null)
 
-    // 予定：日付昇順（近い順）
+    // 今日の日付（時間は0:00:00にリセット）
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // 予定：scheduledで今日以降の日付のみ、日付昇順（近い順）
     const allScheduled = activitiesWithProject
-      .filter(a => a.eventType === 'scheduled')
+      .filter(a => {
+        if (a.eventType !== 'scheduled') return false
+        const eventDate = new Date(a.date)
+        eventDate.setHours(0, 0, 0, 0)
+        return eventDate >= today
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-    // 完了：日付降順（新しい順）で最新8件
+    // 完了：eventType !== 'scheduled' または 過去日付のscheduled、日付降順（新しい順）で最新8件
     const completed = activitiesWithProject
-      .filter(a => a.eventType !== 'scheduled')
+      .filter(a => {
+        if (a.eventType !== 'scheduled') return true
+        // scheduledでも過去日付なら完了扱い
+        const eventDate = new Date(a.date)
+        eventDate.setHours(0, 0, 0, 0)
+        return eventDate < today
+      })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 8)
 
@@ -66,7 +101,7 @@ export function RecentActivity() {
     }
   }, [allEvents, projects])
 
-  const isLoading = allEvents === undefined || projects === undefined
+  const isLoading = false // フォールバック値があるのでロード中にはならない
 
   const formatDate = (date: Date) => {
     const d = new Date(date)
@@ -104,8 +139,9 @@ export function RecentActivity() {
         await deleteLarkEvent(activity)
       }
 
-      // ローカルDBから削除
+      // クラウドDBから削除
       await deleteProjectEvent(activity.id)
+      await loadData()
     } catch (error) {
       console.error('Failed to delete event:', error)
       alert('削除に失敗しました')
@@ -149,6 +185,7 @@ export function RecentActivity() {
         }
       }
 
+      await loadData()
       setEditingEvent(null)
     } catch (error) {
       console.error('Failed to update event:', error)
@@ -257,15 +294,15 @@ export function RecentActivity() {
           </div>
         ) : (
           <div>
-            {scheduledActivities.map((activity, index) => (
+            {(isScheduledExpanded ? scheduledActivities : scheduledActivities.slice(0, 5)).map((activity, index, arr) => (
               <div
                 key={activity.id}
-                onClick={() => navigate(`/country/${activity.countryCode}`, { state: { countryName: getCountryName(activity.countryCode) } })}
+                onClick={() => navigate(`/country/${activity.countryCode}`, { state: { countryName: getCountryName(activity.countryCode), projectId: activity.projectId, eventId: activity.id } })}
                 style={{
                   display: 'flex',
                   gap: '10px',
                   padding: '8px 0',
-                  borderBottom: index < scheduledActivities.length - 1 ? '1px solid rgba(249, 115, 22, 0.15)' : 'none',
+                  borderBottom: index < arr.length - 1 ? '1px solid rgba(249, 115, 22, 0.15)' : 'none',
                   cursor: 'pointer',
                   borderRadius: '8px',
                   margin: '0 -4px',
@@ -282,7 +319,12 @@ export function RecentActivity() {
                   fontWeight: 600,
                   minWidth: '50px',
                 }}>
-                  {formatDate(activity.date)}
+                  <div>{formatDate(activity.date)}</div>
+                  {activity.startTime && (
+                    <div style={{ fontSize: '0.6rem', color: '#f97316', marginTop: '2px' }}>
+                      {activity.startTime}
+                    </div>
+                  )}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
@@ -291,16 +333,29 @@ export function RecentActivity() {
                     gap: '6px',
                     marginBottom: '2px',
                   }}>
-                    <span style={{
-                      fontSize: '0.6rem',
-                      padding: '1px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
-                      color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
-                      fontWeight: 600,
-                    }}>
-                      {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
-                    </span>
+                    {activity.meetingLocation ? (
+                      <span style={{
+                        fontSize: '0.6rem',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: activity.meetingLocation === 'visit' ? '#8b5cf620' : '#10b98120',
+                        color: activity.meetingLocation === 'visit' ? '#8b5cf6' : '#10b981',
+                        fontWeight: 600,
+                      }}>
+                        {activity.meetingLocation === 'visit' ? '🚗 訪問' : '🏢 来社'}
+                      </span>
+                    ) : (
+                      <span style={{
+                        fontSize: '0.6rem',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
+                        color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
+                        fontWeight: 600,
+                      }}>
+                        {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
+                      </span>
+                    )}
                     <span style={{
                       fontSize: '0.75rem',
                       fontWeight: 500,
@@ -388,6 +443,42 @@ export function RecentActivity() {
                 </div>
               </div>
             ))}
+            {scheduledActivities.length > 5 && (
+              <button
+                onClick={() => setIsScheduledExpanded(!isScheduledExpanded)}
+                style={{
+                  width: '100%',
+                  marginTop: '8px',
+                  padding: '8px',
+                  background: 'linear-gradient(135deg, #fff7ed, #ffedd5)',
+                  border: '1px solid rgba(249, 115, 22, 0.2)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  color: '#ea580c',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #ffedd5, #fed7aa)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #fff7ed, #ffedd5)'}
+              >
+                {isScheduledExpanded ? (
+                  <>
+                    <span>▲</span>
+                    <span>閉じる</span>
+                  </>
+                ) : (
+                  <>
+                    <span>▼</span>
+                    <span>もっと見る（{scheduledActivities.length - 5}件）</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -447,15 +538,15 @@ export function RecentActivity() {
           </div>
         ) : (
           <div>
-            {completedActivities.map((activity, index) => (
+            {(isCompletedExpanded ? completedActivities : completedActivities.slice(0, 3)).map((activity, index, arr) => (
               <div
                 key={activity.id}
-                onClick={() => navigate(`/country/${activity.countryCode}`, { state: { countryName: getCountryName(activity.countryCode) } })}
+                onClick={() => navigate(`/country/${activity.countryCode}`, { state: { countryName: getCountryName(activity.countryCode), projectId: activity.projectId, eventId: activity.id } })}
                 style={{
                   display: 'flex',
                   gap: '10px',
                   padding: '8px 0',
-                  borderBottom: index < completedActivities.length - 1 ? '1px solid #f3f4f6' : 'none',
+                  borderBottom: index < arr.length - 1 ? '1px solid #f3f4f6' : 'none',
                   cursor: 'pointer',
                   borderRadius: '8px',
                   margin: '0 -4px',
@@ -481,16 +572,29 @@ export function RecentActivity() {
                     gap: '6px',
                     marginBottom: '2px',
                   }}>
-                    <span style={{
-                      fontSize: '0.6rem',
-                      padding: '1px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
-                      color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
-                      fontWeight: 600,
-                    }}>
-                      {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
-                    </span>
+                    {activity.meetingLocation ? (
+                      <span style={{
+                        fontSize: '0.6rem',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: activity.meetingLocation === 'visit' ? '#8b5cf620' : '#10b98120',
+                        color: activity.meetingLocation === 'visit' ? '#8b5cf6' : '#10b981',
+                        fontWeight: 600,
+                      }}>
+                        {activity.meetingLocation === 'visit' ? '🚗 訪問' : '🏢 来社'}
+                      </span>
+                    ) : (
+                      <span style={{
+                        fontSize: '0.6rem',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: `${ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)]}20`,
+                        color: ACTIVITY_CATEGORY_COLORS[getActivityCategory(activity)],
+                        fontWeight: 600,
+                      }}>
+                        {getActivityCategory(activity) === 'external' ? '🚀' : '📝'} {ACTIVITY_CATEGORY_LABELS[getActivityCategory(activity)]}
+                      </span>
+                    )}
                     <span style={{
                       fontSize: '0.75rem',
                       fontWeight: 500,
@@ -521,6 +625,42 @@ export function RecentActivity() {
                 </div>
               </div>
             ))}
+            {completedActivities.length > 3 && (
+              <button
+                onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
+                style={{
+                  width: '100%',
+                  marginTop: '8px',
+                  padding: '8px',
+                  background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  color: '#3b82f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #eff6ff, #dbeafe)'}
+              >
+                {isCompletedExpanded ? (
+                  <>
+                    <span>▲</span>
+                    <span>閉じる</span>
+                  </>
+                ) : (
+                  <>
+                    <span>▼</span>
+                    <span>もっと見る（{completedActivities.length - 3}件）</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>

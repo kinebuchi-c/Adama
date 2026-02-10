@@ -52,15 +52,38 @@ export function LarkSettingsModal({ isOpen, onClose }: LarkSettingsProps) {
     }
   }
 
-  const handleOAuthLogin = () => {
-    if (!settings?.appId) {
-      setTestResult({ success: false, message: 'App IDを入力してください' })
+  const handleOAuthLogin = async () => {
+    console.log('handleOAuthLogin called')
+    console.log('settings:', settings)
+
+    if (!settings?.appId || !settings?.appSecret) {
+      setTestResult({ success: false, message: 'App IDとApp Secretを入力してください' })
       return
     }
 
-    const redirectUri = `${window.location.origin}/auth/lark/callback`
-    const authUrl = getOAuthAuthorizationUrl(settings.appId, redirectUri)
-    window.location.href = authUrl
+    try {
+      // Save settings before redirect so callback can access them
+      await saveLarkSettings({
+        enabled: settings.enabled,
+        appId: settings.appId,
+        appSecret: settings.appSecret,
+        defaultCalendarId: settings.defaultCalendarId,
+        autoSync: settings.autoSync,
+        eventDurationMinutes: settings.eventDurationMinutes,
+        reminderMinutes: settings.reminderMinutes,
+        useOAuth: settings.useOAuth,
+      })
+      console.log('Settings saved before OAuth redirect')
+
+      const redirectUri = `${window.location.origin}/auth/lark/callback`
+      console.log('redirectUri:', redirectUri)
+      const authUrl = getOAuthAuthorizationUrl(settings.appId, redirectUri)
+      console.log('authUrl:', authUrl)
+      window.location.href = authUrl
+    } catch (error) {
+      console.error('OAuth login error:', error)
+      setTestResult({ success: false, message: `エラー: ${error}` })
+    }
   }
 
   const handleOAuthLogout = async () => {
